@@ -1,0 +1,38 @@
+:root {
+  --pico-font-size: 110%;
+
+  /* Primary (warm red) */
+  --pico-primary: oklch(0.55 0.22 25);
+  --pico-primary-hover: oklch(0.48 0.22 25);
+  --pico-primary-focus: oklch(0.55 0.22 25 / 0.25);
+  --pico-primary-inverse: #fff;
+
+  /* Secondary (blue) */
+  --pico-secondary: oklch(0.55 0.18 260);
+  --pico-secondary-hover: oklch(0.48 0.18 260);
+  --pico-secondary-focus: oklch(0.55 0.18 260 / 0.25);
+
+  /* Gate signal colors */
+  --gate-low: oklch(0.5 0.01 280);
+  --gate-high: oklch(0.65 0.25 140);
+  --gate-low-bg: oklch(0.92 0.01 280);
+  --gate-high-bg: oklch(0.92 0.15 140);
+  --gate-input-label: oklch(0.35 0.01 280);
+  --gate-body-stroke: oklch(0.35 0.01 280);
+  --gate-body-fill: oklch(0.98 0.01 280);
+
+  /* Progress */
+  --progress-fill: oklch(0.6 0.25 140);
+  --progress-bg: oklch(0.9 0.02 280);
+  --progress-text: oklch(0.35 0.01 280);
+
+  /* Cards */
+  --card-bg: oklch(0.98 0.005 280);
+  --card-border: oklch(0.88 0.02 280);
+
+  /* Truth table */
+  --tt-border: oklch(0.82 0.02 280);
+  --tt-highlight: oklch(0.92 0.15 140 / 0.3);
+  --tt-header-bg: oklch(0.25 0.01 280);
+  --tt-header-text: #fff;
+}

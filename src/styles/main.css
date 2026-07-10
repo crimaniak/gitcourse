@@ -1,0 +1,241 @@
+@import '@picocss/pico/css/pico.min.css';
+@import './variables.css';
+
+/* ───────── Layout ───────── */
+#app-header {
+  border-bottom: 2px solid var(--card-border);
+  margin-bottom: 1rem;
+}
+
+/* ───────── Gate Card ───────── */
+.gate-card {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.gate-card svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ───────── Input Toggles ───────── */
+.input-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.input-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--gate-input-label);
+}
+
+.input-toggle button {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.75rem;
+  border: 3px solid var(--card-border);
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--gate-low-bg);
+  color: var(--gate-low);
+  touch-action: manipulation;
+  padding: 0;
+  min-width: unset;
+}
+
+.input-toggle button.active {
+  background: var(--gate-high-bg);
+  color: var(--gate-high);
+  border-color: var(--gate-high);
+}
+
+.input-toggle button:active {
+  transform: scale(0.92);
+}
+
+/* ───────── Output Display ───────── */
+.output-display {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.output-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border: 3px solid var(--card-border);
+  background: var(--gate-low-bg);
+  color: var(--gate-low);
+  transition: all 0.2s ease;
+}
+
+.output-badge.high {
+  background: var(--gate-high-bg);
+  color: var(--gate-high);
+  border-color: var(--gate-high);
+}
+
+/* ───────── Truth Table ───────── */
+.truth-table-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.truth-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  min-width: 280px;
+}
+
+.truth-table th {
+  background: var(--tt-header-bg);
+  color: var(--tt-header-text);
+  padding: 0.6rem 0.8rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.truth-table td {
+  padding: 0.5rem 0.8rem;
+  text-align: center;
+  border: 1px solid var(--tt-border);
+}
+
+.truth-table tr.active {
+  background: var(--tt-highlight);
+  font-weight: 700;
+}
+
+/* ───────── Progress Bar ───────── */
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.progress-track {
+  flex: 1;
+  height: 0.8rem;
+  background: var(--progress-bg);
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--progress-fill);
+  border-radius: 0.4rem;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--progress-text);
+  white-space: nowrap;
+}
+
+/* ───────── Page Navigation ───────── */
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+}
+
+.page-nav .nav-btn {
+  min-width: 8rem;
+}
+
+/* ───────── Parameter Selector ───────── */
+.param-selector {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 1rem;
+  padding: 1rem 1.5rem;
+  margin: 1rem 0;
+}
+
+.param-selector label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  font-weight: 600;
+}
+
+.param-selector select {
+  width: auto;
+  margin: 0;
+}
+
+/* ───────── Settings Page ───────── */
+.settings-section {
+  margin: 2rem 0;
+}
+
+.settings-section h3 {
+  margin-bottom: 0.5rem;
+}
+
+/* ───────── Course List ───────── */
+.course-card {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  transition: border-color 0.2s ease;
+}
+
+.course-card:hover {
+  border-color: var(--pico-primary);
+}
+
+.course-card h3 {
+  margin-bottom: 0.3rem;
+}
+
+/* ───────── Lesson Description ───────── */
+.lesson-desc {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--pico-color);
+  margin: 1rem 0;
+}
+
+/* ───────── Mobile tweaks ───────── */
+@media (max-width: 576px) {
+  .input-toggle button {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.2rem;
+  }
+  .output-badge {
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+  }
+}

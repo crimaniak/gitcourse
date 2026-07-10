@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GitCourse — Interactive Learning</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
+</head>
+<body>
+  <header id="app-header">
+    <nav class="container-fluid">
+      <ul>
+        <li><a href="#/" id="logo"><strong>🎓 GitCourse</strong></a></li>
+      </ul>
+      <ul>
+        <li><a href="#/settings" class="contrast">Settings</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container" v-scope>
+    <!-- ═══ HOME ═══ -->
+    <div v-if="view === 'home'">
+      <article style="text-align:center; padding: 2rem 1rem;">
+        <h1>Welcome, {{ user.name }}!</h1>
+        <p style="font-size:1.2rem; max-width:32rem; margin:1rem auto;">
+          Interactive courses that teach you how computers work.
+          Click a course below to start learning!
+        </p>
+      </article>
+
+      <h2>Available Courses</h2>
+
+      <div v-if="courses.length === 0"><p>No courses available yet.</p></div>
+
+      <div v-for="course in courses" class="course-card" style="cursor:pointer;" @click="goToCourse(course.id)">
+        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <span style="font-size:2.5rem;">{{ course.icon }}</span>
+          <div style="flex:1;">
+            <h3 style="margin:0;">{{ course.title }}</h3>
+            <p style="margin:0.2rem 0;">{{ course.description }}</p>
+            <div class="progress-bar" style="margin:0.5rem 0 0;">
+              <div class="progress-track" style="max-width:12rem;">
+                <div class="progress-fill" :style="'width:' + courseProgress(course.id).pct + '%'"></div>
+              </div>
+              <span class="progress-text">{{ courseProgress(course.id).completed }} / {{ course.pages.length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ COURSE ═══ -->
+    <div v-if="view === 'course' && course">
+      <article>
+        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <span style="font-size:2rem;">{{ course.icon }}</span>
+          <div>
+            <h2 style="margin:0;">{{ course.title }}</h2>
+            <p style="margin:0.3rem 0 0;">{{ course.description }}</p>
+          </div>
+        </div>
+        <div class="progress-bar" style="margin:1rem 0;">
+          <div class="progress-track">
+            <div class="progress-fill" :style="'width:' + courseProgress(course.id).pct + '%'"></div>
+          </div>
+          <span class="progress-text">{{ courseProgress(course.id).completed }} / {{ course.pages.length }}</span>
+        </div>
+      </article>
+
+      <div class="param-selector" v-if="courseParams.length > 0">
+        <label v-for="param in courseParams">
+          {{ param.label }}:
+          <select @change="onParamChange(param.key, $event)">
+            <option v-for="opt in param.options" :value="opt.value" :selected="opt.value === param.current">
+              {{ opt.label }}
+            </option>
+          </select>
+        </label>
+      </div>
+
+      <h3>Lessons</h3>
+
+      <div v-for="(page, i) in course.pages" class="course-card" style="cursor:pointer;" @click="goToPage(course.id, page.id)">
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <span style="font-size:1.5rem; width:2rem; text-align:center;">
+            {{ pageDone(page.id) ? '✅' : (currentPageId === page.id ? '📍' : '🔲') }}
+          </span>
+          <div>
+            <h4 style="margin:0;">
+              {{ i + 1 }}. {{ page.title }}
+              <small v-if="page.subtitle"> — {{ page.subtitle }}</small>
+            </h4>
+            <p style="margin:0.2rem 0 0; font-size:0.9rem;">{{ page.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+        <button class="primary" @click="resumeCourse">Resume Course</button>
+        <button class="secondary" @click="startOver">Start Over</button>
+      </div>
+
+      <p style="margin-top:1rem;"><a href="#/">← Back to Home</a></p>
+    </div>
+
+    <!-- ═══ PAGE (LESSON) ═══ -->
+    <div v-if="view === 'page' && page">
+      <nav aria-label="breadcrumb">
+        <ul>
+          <li><a :href="'#/course/' + courseId">← Back to {{ course.title }}</a></li>
+        </ul>
+      </nav>
+
+      <article>
+        <header style="display:flex; align-items:baseline; gap:1rem; flex-wrap:wrap;">
+          <h2 style="margin:0;">{{ page.title }}</h2>
+          <small v-if="page.subtitle" style="font-size:1rem;">{{ page.subtitle }}</small>
+        </header>
+
+        <p class="lesson-desc">{{ page.description }}</p>
+
+        <div class="gate-card" v-html="gateSVG"></div>
+
+        <div class="input-toggles">
+          <div v-for="(val, i) in inputs" class="input-toggle">
+            <span>Input {{ inputLabel(i) }}</span>
+            <button :class="{ active: val === 1 }" @click="toggleInput(i)">{{ val }}</button>
+          </div>
+        </div>
+
+        <div class="output-display">
+          <span class="output-badge" :class="{ high: output === 1 }">
+            Output: <strong>{{ output }}</strong>
+          </span>
+        </div>
+
+        <h3>Truth Table</h3>
+        <div class="truth-table-wrap">
+          <table class="truth-table">
+            <thead>
+              <tr>
+                <th v-for="i in headerIndices">{{ inputLabel(i) }}</th>
+                <th>OUT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in truthRows" :class="{ active: row.active }">
+                <td v-for="val in row.inputs">{{ val }}</td>
+                <td>{{ row.output }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="progress-bar" style="margin:1rem 0;">
+          <div class="progress-track">
+            <div class="progress-fill" :style="'width:' + courseProgress(courseId).pct + '%'"></div>
+          </div>
+          <span class="progress-text">{{ courseProgress(courseId).completed }} / {{ course.pages.length }}</span>
+        </div>
+
+        <div class="page-nav">
+          <a v-if="pageIndex > 0" :href="'#/page/' + courseId + '/' + course.pages[pageIndex - 1].id" class="secondary nav-btn" role="button">
+            ← Previous: {{ course.pages[pageIndex - 1].title }}
+          </a>
+          <div v-else></div>
+          <a v-if="pageIndex < course.pages.length - 1" :href="'#/page/' + courseId + '/' + course.pages[pageIndex + 1].id" class="primary nav-btn" role="button">
+            Next: {{ course.pages[pageIndex + 1].title }} →
+          </a>
+          <button v-else class="primary nav-btn" @click="finishCourse">🎉 Finish Course!</button>
+        </div>
+      </article>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div v-if="view === 'settings'">
+      <h2>Settings</h2>
+
+      <article class="settings-section">
+        <h3>Player Name</h3>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+          <input type="text" v-model="userNameInput" style="max-width:20rem;" />
+          <button class="primary" @click="saveName">Save</button>
+        </div>
+        <small v-if="nameSaved" style="color:var(--pico-primary);">✅ Name saved!</small>
+      </article>
+
+      <article class="settings-section">
+        <h3>Backup & Restore</h3>
+        <p style="margin-bottom:0.5rem;">Export your progress to a file, or import a backup from another browser.</p>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="primary" @click="exportData">📤 Export Data</button>
+          <button class="secondary" @click="triggerImport">📥 Import Data</button>
+          <input type="file" accept=".json" style="display:none;" ref="fileInput" @change="importData" />
+        </div>
+        <small v-if="importStatus" :style="'color:var(--pico-primary);'">{{ importStatus }}</small>
+      </article>
+
+      <article class="settings-section">
+        <h3>Reset</h3>
+        <button class="contrast" @click="resetAll">🗑 Reset All Progress</button>
+      </article>
+
+      <p><a href="#/">← Back to Home</a></p>
+    </div>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
