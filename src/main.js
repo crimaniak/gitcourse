@@ -193,7 +193,7 @@ createApp(state).mount()
 function disposeWorkpace() {
   if (state.workspace) {
     try {
-      simcir.$(state.workspace).trigger('dispose')
+      state.workspace.trigger('dispose')
     } catch (e) {}
     state.workspace = null
   }
@@ -206,15 +206,14 @@ function initWorkspace(simulation) {
   const container = document.getElementById('simcir-container')
   if (!container) return
 
-  const data = Object.assign({}, simulation)
-  const ws = simcir.createWorkspace(data)
-  container.appendChild(ws)
+  const ws = simcir.createWorkspace(simulation)
+  container.appendChild(ws[0])
   state.workspace = ws
 
   state._currentSignals = []
   state._currentButtons = []
 
-  simcir.$(ws).on('schemaChange', function(e, detail) {
+  ws.on('schemaChange', function(e, detail) {
     if (detail && detail.signals) state._currentSignals = detail.signals
     if (detail && detail.buttons) state._currentButtons = detail.buttons
 
