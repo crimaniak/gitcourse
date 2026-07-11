@@ -1,6 +1,6 @@
 import { createApp, reactive } from 'petite-vue'
 import { getAllCourses, getCourse } from './courses/index.js'
-import { computeGate, getGateDef } from './courses/boolean-functions/index.js'
+import { createTableData, updateTableRow, getInputCombination, getOutputValues } from './courses/boolean-functions/table.js'
 import {
   getUser,
   setUser,
@@ -14,47 +14,25 @@ import {
   resetProgress,
 } from './storage.js'
 
-function buildSVGString(svgData, inputs, output) {
-  const { markup, viewBox, inputY, outputY } = svgData
-  const w = viewBox.w
-  const h = viewBox.h
-
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" style="max-width:400px;display:block;margin:0 auto;">`
-  svg += `<defs><style>
-    .gs path,.gs polyline,.gs rect,.gs circle{stroke:var(--gate-body-stroke)!important}
-    .gs path:not([fill="none"]){fill:var(--gate-body-fill)!important}
-    .gs rect{fill:var(--gate-body-fill)!important}
-    .gs text{fill:var(--gate-body-stroke)!important;font-family:sans-serif}
-    .gls{font-family:sans-serif;font-size:11px;font-weight:700}
-  </style></defs>`
-  svg += `<g class="gs">${markup}</g>`
-
-  for (let i = 0; i < inputY.length; i++) {
-    const c = inputs[i] ? 'var(--gate-high)' : 'var(--gate-low)'
-    svg += `<text x="2" y="${inputY[i] + 4}" class="gls" fill="${c}">${inputs[i]}</text>`
-  }
-
-  const oc = output ? 'var(--gate-high)' : 'var(--gate-low)'
-  svg += `<text x="${w - 2}" y="${outputY + 4}" class="gls" fill="${oc}" text-anchor="end">${output}</text>`
-  svg += '</svg>'
-  return svg
-}
-
-// ─── Reactive state (exported for hash listener) ───
 export const state = reactive({
   view: 'home',
   courseId: '',
   pageId: '',
-  inputs: [],
 
   userNameInput: '',
   nameSaved: false,
   importStatus: '',
 
-  // Incremented on every localStorage mutation to trigger re-renders
+  // Simcir workspace reference
+  simContainer: null,
+  workspace: null,
+  tableData: null,
+  resultMessage: '',
+  isCorrect: false,
+  solutionChecked: false,
+
   _revision: 0,
 
-  // ─── Getters ───
   get user() {
     void this._revision
     return getUser()
@@ -73,39 +51,16 @@ export const state = reactive({
     const c = this.course
     return c ? c.pages.find(p => p.id === this.pageId) : null
   },
-  get numInputs() {
-    return this.page ? this.page.inputs : 0
+  get tableConfig() {
+    return this.page ? this.page.tableConfig : null
   },
-  get headerIndices() {
-    const n = this.numInputs
-    return Array.from({ length: n }, (_, i) => i)
+  get tableRows() {
+    return this.tableData || []
   },
   get currentPageId() {
     void this._revision
     const p = this.course ? getCourseProgress(this.course.id) : null
     return p ? p.currentPage : null
-  },
-  get truthRows() {
-    if (!this.page) return []
-    const gateDef = getGateDef(this.page.gateType)
-    if (!gateDef) return []
-    return gateDef.truthTable().map(row => ({
-      inputs: row.inputs,
-      output: row.output,
-      active: row.inputs.every((v, i) => v === this.inputs[i]),
-    }))
-  },
-  get output() {
-    if (!this.page || this.inputs.length === 0) return 0
-    return computeGate(this.page.gateType, this.inputs)
-  },
-  get gateSVG() {
-    if (!this.page) return ''
-    void this._revision
-    const gateDef = getGateDef(this.page.gateType)
-    if (!gateDef) return ''
-    const std = getCourseParams(this.courseId)['gate-standard'] || 'ansi'
-    return buildSVGString(gateDef.svg(std), this.inputs, this.output)
   },
   get courseParams() {
     const c = this.course
@@ -120,7 +75,6 @@ export const state = reactive({
     }))
   },
 
-  // ─── Methods ───
   courseProgress(courseId) {
     void this._revision
     const p = getCourseProgress(courseId)
@@ -136,10 +90,6 @@ export const state = reactive({
     return p && (p.completedPages || []).includes(pageId)
   },
 
-  inputLabel(i) {
-    return String.fromCharCode(65 + i)
-  },
-
   goHome() { window.location.hash = '#/' },
   goToCourse(id) { window.location.hash = '#/course/' + id },
   goToSettings() { window.location.hash = '#/settings' },
@@ -150,7 +100,15 @@ export const state = reactive({
 
   resumeCourse() {
     const p = getCourseProgress(this.courseId)
-    const target = p.currentPage || this.course.pages[0].id
+    const allCompleted = p.completedPages || []
+    const pages = this.course.pages
+    let target = pages[0].id
+    for (const page of pages) {
+      if (!allCompleted.includes(page.id)) {
+        target = page.id
+        break
+      }
+    }
     this.goToPage(this.courseId, target)
   },
 
@@ -158,13 +116,28 @@ export const state = reactive({
     window.location.hash = '#/course/' + this.courseId
   },
 
-  toggleInput(i) {
-    this.inputs[i] = this.inputs[i] ? 0 : 1
-  },
-
   onParamChange(key, event) {
     setCourseParam(this.courseId, key, event.target.value)
     this._revision++
+  },
+
+  checkSolution() {
+    if (this.solutionChecked) return
+    const page = this.page
+    if (!page) return
+    const signals = this._currentSignals || []
+    const buttons = this._currentButtons || []
+    const result = page.checkSolution(signals, buttons, this.tableData)
+    this.isCorrect = result.correct
+    if (result.correct) {
+      this.resultMessage = '✅ Correct!'
+      this.solutionChecked = true
+      completePage(this.courseId, this.pageId)
+      this._revision++
+    } else {
+      this.resultMessage = '❌ ' + (result.hint || 'Try again.')
+      this.solutionChecked = false
+    }
   },
 
   saveName() {
@@ -215,31 +188,87 @@ export const state = reactive({
   },
 })
 
-// ─── Mount ───
 createApp(state).mount()
 
-// ─── Hash router ───
+function disposeWorkpace() {
+  if (state.workspace) {
+    try {
+      simcir.$(state.workspace).trigger('dispose')
+    } catch (e) {}
+    state.workspace = null
+  }
+  const container = document.getElementById('simcir-container')
+  if (container) container.innerHTML = ''
+}
+
+function initWorkspace(simulation) {
+  disposeWorkpace()
+  const container = document.getElementById('simcir-container')
+  if (!container) return
+
+  const data = Object.assign({}, simulation)
+  const ws = simcir.createWorkspace(data)
+  container.appendChild(ws)
+  state.workspace = ws
+
+  state._currentSignals = []
+  state._currentButtons = []
+
+  simcir.$(ws).on('schemaChange', function(e, detail) {
+    if (detail && detail.signals) state._currentSignals = detail.signals
+    if (detail && detail.buttons) state._currentButtons = detail.buttons
+
+    const tableConfig = state.tableConfig
+    if (tableConfig && state.tableData) {
+      const inputs = getInputCombination(state._currentSignals, tableConfig.inputDeviceIds)
+      const outputs = getOutputValues(state._currentSignals, tableConfig.outputDeviceIds)
+      updateTableRow(state.tableData, inputs, outputs)
+      state._revision++
+    }
+  })
+}
+
+window.addEventListener('hashchange', syncFromHash)
+syncFromHash()
+
 function syncFromHash() {
   const hash = window.location.hash.slice(1) || '/'
+
   if (hash === '/' || hash === '') {
     state.view = 'home'
+    disposeWorkpace()
   } else if (hash.startsWith('/course/')) {
     state.view = 'course'
     state.courseId = hash.slice(8).split('/')[0]
     state.pageId = ''
+    disposeWorkpace()
   } else if (hash.startsWith('/page/')) {
     const parts = hash.slice(6).split('/')
     if (parts.length >= 2) {
       state.courseId = parts[0]
       state.pageId = parts[1]
       state.view = 'page'
+
       const c = getCourse(state.courseId)
       const p = c ? c.pages.find(pg => pg.id === state.pageId) : null
       if (p) {
-        state.inputs = new Array(p.inputs).fill(0)
+        state.resultMessage = ''
+        state.isCorrect = false
+        state.solutionChecked = (getCourseProgress(state.courseId).completedPages || []).includes(state.pageId)
+        state.tableData = null
+
+        if (p.tableConfig) {
+          state.tableData = createTableData(p.tableConfig.inputLabels, p.tableConfig.outputLabels)
+        }
+
         setCurrentPage(state.courseId, state.pageId)
-        completePage(state.courseId, state.pageId)
         state._revision++
+
+        requestAnimationFrame(() => {
+          if (p.simulation) {
+            initWorkspace(p.simulation)
+          }
+        })
       }
     }
   } else if (hash === '/settings') {
@@ -247,8 +276,6 @@ function syncFromHash() {
     state.userNameInput = getUser().name
     state.nameSaved = false
     state.importStatus = ''
+    disposeWorkpace()
   }
 }
-
-window.addEventListener('hashchange', syncFromHash)
-syncFromHash()

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GitCourse — Interactive Learning</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
+  <link rel="stylesheet" href="https://crimaniak.github.io/simcirjs/simcir.css" />
+  <link rel="stylesheet" href="https://crimaniak.github.io/simcirjs/simcir-basicset.css" />
 </head>
 <body>
   <header id="app-header">
@@ -68,17 +70,6 @@
         </div>
       </article>
 
-      <div class="param-selector" v-if="courseParams.length > 0">
-        <label v-for="param in courseParams">
-          {{ param.label }}:
-          <select @change="onParamChange(param.key, $event)">
-            <option v-for="opt in param.options" :value="opt.value" :selected="opt.value === param.current">
-              {{ opt.label }}
-            </option>
-          </select>
-        </label>
-      </div>
-
       <h3>Lessons</h3>
 
       <div v-for="(page, i) in course.pages" class="course-card" style="cursor:pointer;" @click="goToPage(course.id, page.id)">
@@ -105,7 +96,7 @@
     </div>
 
     <!-- ═══ PAGE (LESSON) ═══ -->
-    <div v-if="view === 'page' && page">
+    <div v-if="view === 'page' && page" style="max-width:100%;">
       <nav aria-label="breadcrumb">
         <ul>
           <li><a :href="'#/course/' + courseId">← Back to {{ course.title }}</a></li>
@@ -120,39 +111,41 @@
 
         <p class="lesson-desc">{{ page.description }}</p>
 
-        <div class="gate-card" v-html="gateSVG"></div>
+        <!-- SIMCIR container -->
+        <div id="simcir-container" ref="simcirContainer" style="margin:1rem 0; overflow-x:auto;"></div>
 
-        <div class="input-toggles">
-          <div v-for="(val, i) in inputs" class="input-toggle">
-            <span>Input {{ inputLabel(i) }}</span>
-            <button :class="{ active: val === 1 }" @click="toggleInput(i)">{{ val }}</button>
-          </div>
-        </div>
-
-        <div class="output-display">
-          <span class="output-badge" :class="{ high: output === 1 }">
-            Output: <strong>{{ output }}</strong>
-          </span>
-        </div>
-
-        <h3>Truth Table</h3>
-        <div class="truth-table-wrap">
+        <!-- Truth table -->
+        <div v-if="tableConfig && tableRows.length > 0" class="truth-table-wrap">
+          <h3>Truth Table</h3>
           <table class="truth-table">
             <thead>
               <tr>
-                <th v-for="i in headerIndices">{{ inputLabel(i) }}</th>
-                <th>OUT</th>
+                <th v-for="label in tableConfig.inputLabels">{{ label }}</th>
+                <th v-for="label in tableConfig.outputLabels">{{ label }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in truthRows" :class="{ active: row.active }">
+              <tr v-for="row in tableRows">
                 <td v-for="val in row.inputs">{{ val }}</td>
-                <td>{{ row.output }}</td>
+                <td v-for="val in row.outputs" :class="{ placeholder: val === '\u2013' }">{{ val }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
+        <!-- Check solution -->
+        <div style="margin:1rem 0; text-align:center;">
+          <button class="primary" @click="checkSolution" :disabled="solutionChecked">
+            {{ solutionChecked ? '✅ Solved!' : 'Check Solution' }}
+          </button>
+        </div>
+
+        <!-- Result display -->
+        <div v-if="resultMessage" class="result-display" :class="{ correct: isCorrect, incorrect: !isCorrect }">
+          {{ resultMessage }}
+        </div>
+
+        <!-- Progress -->
         <div class="progress-bar" style="margin:1rem 0;">
           <div class="progress-track">
             <div class="progress-fill" :style="'width:' + courseProgress(courseId).pct + '%'"></div>
@@ -160,15 +153,16 @@
           <span class="progress-text">{{ courseProgress(courseId).completed }} / {{ course.pages.length }}</span>
         </div>
 
+        <!-- Navigation -->
         <div class="page-nav">
           <a v-if="pageIndex > 0" :href="'#/page/' + courseId + '/' + course.pages[pageIndex - 1].id" class="secondary nav-btn" role="button">
             ← Previous: {{ course.pages[pageIndex - 1].title }}
           </a>
           <div v-else></div>
-          <a v-if="pageIndex < course.pages.length - 1" :href="'#/page/' + courseId + '/' + course.pages[pageIndex + 1].id" class="primary nav-btn" role="button">
+          <a v-if="pageIndex < course.pages.length - 1" :href="'#/page/' + courseId + '/' + course.pages[pageIndex + 1].id" class="primary nav-btn" role="button" :class="{ disabled: !pageDone(page.id) }">
             Next: {{ course.pages[pageIndex + 1].title }} →
           </a>
-          <button v-else class="primary nav-btn" @click="finishCourse">🎉 Finish Course!</button>
+          <button v-else class="primary nav-btn" @click="finishCourse" :disabled="!pageDone(page.id)">🎉 Finish Course!</button>
         </div>
       </article>
     </div>
@@ -206,6 +200,9 @@
     </div>
   </main>
 
+  <script src="https://crimaniak.github.io/simcirjs/simcir.js"></script>
+  <script src="https://crimaniak.github.io/simcirjs/simcir-basicset.js"></script>
+  <script src="https://crimaniak.github.io/simcirjs/simcir-library.js"></script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

@@ -7,91 +7,95 @@
   margin-bottom: 1rem;
 }
 
-/* ───────── Gate Card ───────── */
-.gate-card {
+/* ───────── SimcirJS overrides ───────── */
+.simcir-workspace {
+  border-color: var(--card-border);
   background: var(--card-bg);
-  border: 2px solid var(--card-border);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  margin: 1rem 0;
 }
 
-.gate-card svg {
+.simcir-pin-hole {
+  fill: var(--tt-border);
+}
+
+.simcir-toolbox {
+  fill: var(--card-bg);
+}
+
+.simcir-connector {
+  stroke: var(--pico-primary);
+}
+
+.simcir-device {
+  fill: var(--card-bg);
+  stroke: var(--gate-body-stroke);
+}
+
+.simcir-device-selected {
+  stroke: var(--pico-primary);
+}
+
+.simcir-device-label {
+  fill: var(--pico-color);
+}
+
+.simcir-node-type-in {
+  fill: var(--gate-high);
+}
+
+.simcir-node-type-out {
+  fill: var(--gate-low-bg);
+}
+
+.simcir-node {
+  stroke: var(--gate-body-stroke);
+}
+
+.simcir-node-hot {
+  stroke: var(--gate-high);
+}
+
+.simcir-node-hover {
+  stroke: var(--pico-primary);
+}
+
+.simcir-node-label {
+  fill: var(--pico-color);
+}
+
+.simcir-basicset-dc {
+  fill: oklch(0.92 0.10 25 / 0.3);
+}
+
+.simcir-basicset-switch {
+  fill: oklch(0.85 0.08 240 / 0.3);
+}
+
+.simcir-basicset-switch-button-pressed {
+  fill: oklch(0.7 0.25 140) !important;
+}
+
+.simcir-basicset-symbol {
+  stroke: var(--gate-body-stroke);
+}
+
+.simcir-basicset-osc {
+  fill: oklch(0.92 0.10 25 / 0.3);
+}
+
+.simcir-scrollbar {
+  fill: var(--tt-border);
+}
+
+.simcir-scrollbar-bar {
+  fill: var(--card-border);
+}
+
+.simcir-scrollbar-bar:hover {
+  fill: var(--pico-primary);
+}
+
+.simcir-body {
   display: block;
-  margin: 0 auto;
-  max-width: 100%;
-  height: auto;
-}
-
-/* ───────── Input Toggles ───────── */
-.input-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
-  margin: 1.5rem 0;
-}
-
-.input-toggle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--gate-input-label);
-}
-
-.input-toggle button {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 0.75rem;
-  border: 3px solid var(--card-border);
-  font-size: 1.4rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  background: var(--gate-low-bg);
-  color: var(--gate-low);
-  touch-action: manipulation;
-  padding: 0;
-  min-width: unset;
-}
-
-.input-toggle button.active {
-  background: var(--gate-high-bg);
-  color: var(--gate-high);
-  border-color: var(--gate-high);
-}
-
-.input-toggle button:active {
-  transform: scale(0.92);
-}
-
-/* ───────── Output Display ───────── */
-.output-display {
-  text-align: center;
-  margin: 1rem 0;
-}
-
-.output-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 1.5rem;
-  border-radius: 0.75rem;
-  font-size: 1.3rem;
-  font-weight: 700;
-  border: 3px solid var(--card-border);
-  background: var(--gate-low-bg);
-  color: var(--gate-low);
-  transition: all 0.2s ease;
-}
-
-.output-badge.high {
-  background: var(--gate-high-bg);
-  color: var(--gate-high);
-  border-color: var(--gate-high);
 }
 
 /* ───────── Truth Table ───────── */
@@ -121,9 +125,31 @@
   border: 1px solid var(--tt-border);
 }
 
-.truth-table tr.active {
-  background: var(--tt-highlight);
-  font-weight: 700;
+.truth-table td.placeholder {
+  color: var(--progress-bg);
+  font-weight: 400;
+}
+
+/* ───────── Result Display ───────── */
+.result-display {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1rem 0;
+}
+
+.result-display.correct {
+  background: var(--gate-high-bg);
+  color: var(--gate-high);
+  border: 2px solid var(--gate-high);
+}
+
+.result-display.incorrect {
+  background: oklch(0.92 0.15 25 / 0.3);
+  color: oklch(0.5 0.22 25);
+  border: 2px solid oklch(0.5 0.22 25);
 }
 
 /* ───────── Progress Bar ───────── */
@@ -170,35 +196,9 @@
   min-width: 8rem;
 }
 
-/* ───────── Parameter Selector ───────── */
-.param-selector {
-  background: var(--card-bg);
-  border: 2px solid var(--card-border);
-  border-radius: 1rem;
-  padding: 1rem 1.5rem;
-  margin: 1rem 0;
-}
-
-.param-selector label {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.8rem;
-  font-weight: 600;
-}
-
-.param-selector select {
-  width: auto;
-  margin: 0;
-}
-
-/* ───────── Settings Page ───────── */
-.settings-section {
-  margin: 2rem 0;
-}
-
-.settings-section h3 {
-  margin-bottom: 0.5rem;
+.nav-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* ───────── Course List ───────── */
@@ -227,15 +227,25 @@
   margin: 1rem 0;
 }
 
+/* ───────── Settings Page ───────── */
+.settings-section {
+  margin: 2rem 0;
+}
+
+.settings-section h3 {
+  margin-bottom: 0.5rem;
+}
+
 /* ───────── Mobile tweaks ───────── */
 @media (max-width: 576px) {
-  .input-toggle button {
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.2rem;
-  }
   .output-badge {
     font-size: 1.1rem;
     padding: 0.5rem 1rem;
+  }
+  #simcir-container {
+    overflow-x: auto;
+  }
+  #simcir-container svg {
+    max-width: none;
   }
 }
