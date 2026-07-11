@@ -127,7 +127,8 @@ export const state = reactive({
     if (!page) return
     const signals = this._currentSignals || []
     const buttons = this._currentButtons || []
-    const result = page.checkSolution(signals, buttons, this.tableData)
+    const resolve = lbl => (state._labelMap && state._labelMap[lbl]) || lbl
+    const result = page.checkSolution(signals, buttons, this.tableData, resolve)
     this.isCorrect = result.correct
     if (result.correct) {
       this.resultMessage = '✅ Correct!'
@@ -212,15 +213,25 @@ function initWorkspace(simulation) {
 
   state._currentSignals = []
   state._currentButtons = []
+  state._labelMap = {}
+
+  try {
+    simcir.$(ws).find('.simcir-device').each(function() {
+      const ctrl = simcir.controller(simcir.$(this))
+      state._labelMap[ctrl.getLabel()] = ctrl.id
+    })
+  } catch (e) {}
 
   ws.on('schemaChange', function(e, detail) {
     if (detail && detail.signals) state._currentSignals = detail.signals
     if (detail && detail.buttons) state._currentButtons = detail.buttons
 
     const tableConfig = state.tableConfig
-    if (tableConfig && state.tableData) {
-      const inputs = getInputCombination(state._currentSignals, tableConfig.inputDeviceIds)
-      const outputs = getOutputValues(state._currentSignals, tableConfig.outputDeviceIds)
+    if (tableConfig && state.tableData && state._labelMap) {
+      const inputIds = tableConfig.inputLabels.map(lbl => state._labelMap[lbl])
+      const outputIds = tableConfig.outputLabels.map(lbl => state._labelMap[lbl])
+      const inputs = getInputCombination(state._currentSignals, inputIds)
+      const outputs = getOutputValues(state._currentSignals, outputIds)
       updateTableRow(state.tableData, inputs, outputs)
       state._revision++
     }

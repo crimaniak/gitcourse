@@ -25,9 +25,9 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const dcOut = signals.find(s => s.deviceId === 'dc' && s.type === 'out')
-        const ledIn = signals.find(s => s.deviceId === 'led' && s.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const dcOut = signals.find(s => s.deviceId === resolve('DC') && s.type === 'out')
+        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
         if (!dcOut || !ledIn) return { correct: false, hint: 'Could not read signals.' }
         if (ledIn.value != null) return { correct: true }
         return { correct: false, hint: 'The LED is not lit. Make sure you connected the DC output to the LED input.' }
@@ -53,9 +53,9 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const btn = buttons.find(b => b.deviceId === 'btn')
-        const ledIn = signals.find(s => s.deviceId === 'led' && s.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const btn = buttons.find(b => b.deviceId === resolve('PushOn'))
+        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
         if (btn && btn.state.on && ledIn && ledIn.value != null) return { correct: true }
         if (ledIn && ledIn.value != null) return { correct: true }
         return { correct: false, hint: 'Connect DC → PushOn → LED, then press the button to light the LED.' }
@@ -81,8 +81,8 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const ledIn = signals.find(s => s.deviceId === 'led' && s.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
         if (ledIn && ledIn.value != null) return { correct: true }
         return { correct: false, hint: 'Connect DC → PushOff → LED. The LED should be on by default.' }
       },
@@ -107,8 +107,8 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const ledIn = signals.find(s => s.deviceId === 'led' && s.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
         if (ledIn && ledIn.value != null) return { correct: true }
         return { correct: false, hint: 'Connect DC → Toggle → LED. Click the toggle to turn the LED on.' }
       },
@@ -134,8 +134,8 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const ledIn = signals.find(s => s.deviceId === 'led' && s.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
         if (ledIn && ledIn.value != null) return { correct: true }
         return { correct: false, hint: 'Connect DC → Toggle → BUF → LED. The LED should turn on when you toggle the switch.' }
       },
@@ -164,8 +164,8 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputDeviceIds: ['tog'], outputDeviceIds: ['led'], inputLabels: ['A'], outputLabels: ['OUT'], numInputs: 1 },
-      checkSolution(signals, buttons, tableData) {
+      tableConfig: { inputLabels: ['A'], outputLabels: ['OUT'], numInputs: 1 },
+      checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
         const expected = [1, 0]
         const rows = 2
@@ -203,8 +203,8 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputDeviceIds: ['ta', 'tb'], outputDeviceIds: ['led'], inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
-      checkSolution(signals, buttons, tableData) {
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
         const expected = [0, 0, 0, 1]
         for (let i = 0; i < 4; i++) {
@@ -241,8 +241,8 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputDeviceIds: ['ta', 'tb'], outputDeviceIds: ['led'], inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
-      checkSolution(signals, buttons, tableData) {
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
         const expected = [1, 1, 1, 0]
         for (let i = 0; i < 4; i++) {
@@ -279,8 +279,8 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputDeviceIds: ['ta', 'tb'], outputDeviceIds: ['led'], inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
-      checkSolution(signals, buttons, tableData) {
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
         const expected = [0, 1, 1, 1]
         for (let i = 0; i < 4; i++) {
@@ -317,8 +317,8 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputDeviceIds: ['ta', 'tb'], outputDeviceIds: ['led'], inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
-      checkSolution(signals, buttons, tableData) {
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
         const expected = [1, 0, 0, 0]
         for (let i = 0; i < 4; i++) {
@@ -355,8 +355,8 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputDeviceIds: ['ta', 'tb'], outputDeviceIds: ['led'], inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
-      checkSolution(signals, buttons, tableData) {
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
         const expected = [0, 1, 1, 0]
         for (let i = 0; i < 4; i++) {
@@ -393,8 +393,8 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputDeviceIds: ['ta', 'tb'], outputDeviceIds: ['led'], inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
-      checkSolution(signals, buttons, tableData) {
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
         const expected = [1, 0, 0, 1]
         for (let i = 0; i < 4; i++) {
@@ -435,9 +435,9 @@ export const BOOLEAN_COURSE = {
         ],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const qSig = signals.find(s => s.deviceId === 'ledQ' && s.type === 'in')
-        const nqSig = signals.find(s => s.deviceId === 'ledNQ' && s.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
+        const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
         const hasQ = qSig && qSig.value != null
         const hasNQ = nqSig && nqSig.value != null
         if (hasQ && hasNQ) return { correct: true }
@@ -481,9 +481,9 @@ export const BOOLEAN_COURSE = {
         ],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const qSig = signals.find(s => s.deviceId === 'ledQ' && s.type === 'in')
-        const nqSig = signals.find(s => s.deviceId === 'ledNQ' && s.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
+        const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
         const hasQ = qSig && qSig.value != null
         const hasNQ = nqSig && nqSig.value != null
         if (hasQ && hasNQ) return { correct: true }
@@ -525,9 +525,9 @@ export const BOOLEAN_COURSE = {
         ],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const qSig = signals.find(s => s.deviceId === 'ledQ' && s.type === 'in')
-        const nqSig = signals.find(s => s.deviceId === 'ledNQ' && s.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
+        const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
         const hasQ = qSig && qSig.value != null
         const hasNQ = nqSig && nqSig.value != null
         if (hasQ && hasNQ) return { correct: true }
@@ -577,14 +577,15 @@ export const BOOLEAN_COURSE = {
         ],
       },
       tableConfig: null,
-      checkSolution(signals, buttons) {
-        const allLit = ['d0','d1','d2','d3','d4','d5','d6','d7'].some(id => {
-          const s = signals.find(sig => sig.deviceId === id && sig.type === 'in')
+      checkSolution(signals, buttons, tableData, resolve) {
+        const ledLabels = ['D0','D1','D2','D3','D4','D5','D6','D7']
+        const allLit = ledLabels.some(label => {
+          const s = signals.find(sig => sig.deviceId === resolve(label) && sig.type === 'in')
           return s && s.value != null
         })
         if (allLit) return { correct: true }
-        const anyLit = ['d0','d1','d2','d3','d4','d5','d6','d7'].some(id => {
-          const s = signals.find(sig => sig.deviceId === id && sig.type === 'in')
+        const anyLit = ledLabels.some(label => {
+          const s = signals.find(sig => sig.deviceId === resolve(label) && sig.type === 'in')
           return s && s.value != null
         })
         if (anyLit) return { correct: true }
