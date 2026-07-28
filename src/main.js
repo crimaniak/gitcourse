@@ -1,6 +1,9 @@
+import './styles/main.css'
 import { createApp, reactive } from 'petite-vue'
 import { getAllCourses, getCourse } from './courses/index.js'
-import { createTableData, updateTableRow, getInputCombination, getOutputValues } from './courses/boolean-functions/table.js'
+import { getInputCombination, getOutputValues } from './courses/boolean-functions/table.js'
+import { TruthTable } from './courses/boolean-functions/TruthTable.js'
+import { SimulationManager } from './courses/boolean-functions/SimulationManager.js'
 import {
   getUser,
   setUser,
@@ -14,6 +17,8 @@ import {
   resetProgress,
 } from './storage.js'
 
+const sim = new SimulationManager()
+
 export const state = reactive({
   view: 'home',
   courseId: '',
@@ -23,9 +28,6 @@ export const state = reactive({
   nameSaved: false,
   importStatus: '',
 
-  // Simcir workspace reference
-  simContainer: null,
-  workspace: null,
   tableData: null,
   resultMessage: '',
   isCorrect: false,
@@ -55,7 +57,7 @@ export const state = reactive({
     return this.page ? this.page.tableConfig : null
   },
   get tableRows() {
-    return this.tableData || []
+    return this.tableData ? this.tableData.getRows() : []
   },
   get currentPageId() {
     void this._revision
@@ -125,10 +127,8 @@ export const state = reactive({
     if (this.solutionChecked) return
     const page = this.page
     if (!page) return
-    const signals = this._currentSignals || []
-    const buttons = this._currentButtons || []
-    const resolve = lbl => (state._labelMap && state._labelMap[lbl]) || lbl
-    const result = page.checkSolution(signals, buttons, this.tableData, resolve)
+    const resolve = lbl => sim.resolveLabel(lbl)
+    const result = page.checkSolution(sim.signals, sim.buttons, this.tableData, resolve)
     this.isCorrect = result.correct
     if (result.correct) {
       this.resultMessage = '✅ Correct!'
@@ -191,52 +191,17 @@ export const state = reactive({
 
 createApp(state).mount()
 
-function disposeWorkpace() {
-  if (state.workspace) {
-    try {
-      state.workspace.trigger('dispose')
-    } catch (e) {}
-    state.workspace = null
+sim.onChange(() => {
+  const tc = state.tableConfig
+  if (tc && state.tableData) {
+    const inputIds = tc.inputLabels.map(lbl => sim.resolveLabel(lbl))
+    const outputIds = tc.outputLabels.map(lbl => sim.resolveLabel(lbl))
+    const inputs = getInputCombination(sim.signals, inputIds)
+    const outputs = getOutputValues(sim.signals, outputIds)
+    state.tableData.update(inputs, outputs)
+    state._revision++
   }
-  const container = document.getElementById('simcir-container')
-  if (container) container.innerHTML = ''
-}
-
-function initWorkspace(simulation) {
-  disposeWorkpace()
-  const container = document.getElementById('simcir-container')
-  if (!container) return
-
-  const ws = simcir.createWorkspace(simulation)
-  container.appendChild(ws[0])
-  state.workspace = ws
-
-  state._currentSignals = []
-  state._currentButtons = []
-  state._labelMap = {}
-
-  try {
-    simcir.$(ws).find('.simcir-device').each(function() {
-      const ctrl = simcir.controller(simcir.$(this))
-      state._labelMap[ctrl.getLabel()] = ctrl.id
-    })
-  } catch (e) {}
-
-  ws.on('schemaChange', function(e, detail) {
-    if (detail && detail.signals) state._currentSignals = detail.signals
-    if (detail && detail.buttons) state._currentButtons = detail.buttons
-
-    const tableConfig = state.tableConfig
-    if (tableConfig && state.tableData && state._labelMap) {
-      const inputIds = tableConfig.inputLabels.map(lbl => state._labelMap[lbl])
-      const outputIds = tableConfig.outputLabels.map(lbl => state._labelMap[lbl])
-      const inputs = getInputCombination(state._currentSignals, inputIds)
-      const outputs = getOutputValues(state._currentSignals, outputIds)
-      updateTableRow(state.tableData, inputs, outputs)
-      state._revision++
-    }
-  })
-}
+})
 
 window.addEventListener('hashchange', syncFromHash)
 syncFromHash()
@@ -246,18 +211,20 @@ function syncFromHash() {
 
   if (hash === '/' || hash === '') {
     state.view = 'home'
-    disposeWorkpace()
+    sim.dispose()
   } else if (hash.startsWith('/course/')) {
     state.view = 'course'
     state.courseId = hash.slice(8).split('/')[0]
     state.pageId = ''
-    disposeWorkpace()
+    sim.dispose()
   } else if (hash.startsWith('/page/')) {
     const parts = hash.slice(6).split('/')
     if (parts.length >= 2) {
       state.courseId = parts[0]
       state.pageId = parts[1]
       state.view = 'page'
+
+      import(`./courses/${state.courseId}/course.css`).catch(() => {})
 
       const c = getCourse(state.courseId)
       const p = c ? c.pages.find(pg => pg.id === state.pageId) : null
@@ -268,7 +235,7 @@ function syncFromHash() {
         state.tableData = null
 
         if (p.tableConfig) {
-          state.tableData = createTableData(p.tableConfig.inputLabels, p.tableConfig.outputLabels)
+          state.tableData = new TruthTable(p.tableConfig.inputLabels, p.tableConfig.outputLabels, p.tableConfig.expected)
         }
 
         setCurrentPage(state.courseId, state.pageId)
@@ -276,7 +243,9 @@ function syncFromHash() {
 
         requestAnimationFrame(() => {
           if (p.simulation) {
-            initWorkspace(p.simulation)
+            sim.init(p.simulation)
+            const ttc = document.getElementById('truth-table-container')
+            if (ttc && state.tableData) state.tableData.render(ttc)
           }
         })
       }
@@ -286,6 +255,6 @@ function syncFromHash() {
     state.userNameInput = getUser().name
     state.nameSaved = false
     state.importStatus = ''
-    disposeWorkpace()
+    sim.dispose()
   }
 }

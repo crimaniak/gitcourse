@@ -2,3 +2,8 @@ node_modules/
 dist/
 *.local
 .DS_Store
+/.claude/
+/.codegraph/
+/.settings/
+/.project
+/.mcp.json

@@ -34,12 +34,40 @@ export const BOOLEAN_COURSE = {
       },
     },
 
-    // ─── Task 2: PushOn ───
+    // ─── Task 2: Build a Circuit ───
+    {
+      id: 'build-connect',
+      title: 'Build a Circuit',
+      subtitle: 'From scratch',
+      description: 'Now build a circuit from scratch. Drag a DC source and an LED from the toolbox onto the field. Place the DC on the left and the LED on the right. Then connect the DC output to the LED input to light it up.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'DC', maxCount: 1 },
+          { type: 'LED', maxCount: 1 },
+        ],
+        devices: [],
+        connectors: [],
+      },
+      tableConfig: null,
+      checkSolution(signals, buttons, tableData, resolve) {
+        const dcOut = signals.find(s => s.deviceId === resolve('DC') && s.type === 'out')
+        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
+        if (!dcOut || !ledIn) return { correct: false, hint: 'Add a DC source and an LED to the field.' }
+        if (ledIn.value != null) return { correct: true }
+        return { correct: false, hint: 'Connect DC output to LED input.' }
+      },
+    },
+
+    // ─── Task 3: PushOn ───
     {
       id: 'pushon',
       title: 'PushOn Button',
       subtitle: 'Momentary contact',
-      description: 'Now add a PushOn button between the DC source and the LED. Connect: DC → PushOn → LED. Then press the button to see the LED light up — it only lights while you hold the button down.',
+      description: 'Now add a PushOn button between the DC source and the LED. Connect: DC → PushOn → LED. Then press the button to see the LED light up — it only lights while you hold the button down. Complete the truth table to verify the behavior.',
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
@@ -52,22 +80,49 @@ export const BOOLEAN_COURSE = {
         ],
         connectors: [],
       },
-      tableConfig: null,
+      tableConfig: { inputLabels: ['PushOn'], outputLabels: ['LED'], numInputs: 1, expected: [0, 1] },
       checkSolution(signals, buttons, tableData, resolve) {
-        const btn = buttons.find(b => b.deviceId === resolve('PushOn'))
-        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
-        if (btn && btn.state.on && ledIn && ledIn.value != null) return { correct: true }
-        if (ledIn && ledIn.value != null) return { correct: true }
-        return { correct: false, hint: 'Connect DC → PushOn → LED, then press the button to light the LED.' }
+        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. PushOn passes signal only while pressed.' }
+        return { correct: true }
       },
     },
 
-    // ─── Task 3: PushOff ───
+    // ─── Task 4: Build a PushOn Circuit ───
+    {
+      id: 'build-pushon',
+      title: 'Build a PushOn Circuit',
+      subtitle: 'Add a button',
+      description: 'Build the PushOn circuit from scratch. Drag a DC source, a PushOn button, and an LED from the toolbox. Wire them: DC → PushOn → LED. Then press the button and complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'DC', maxCount: 1 },
+          { type: 'PushOn', maxCount: 1 },
+          { type: 'LED', maxCount: 1 },
+        ],
+        devices: [],
+        connectors: [],
+      },
+      tableConfig: { inputLabels: ['PushOn'], outputLabels: ['LED'], numInputs: 1, expected: [0, 1] },
+      checkSolution(signals, buttons, tableData, resolve) {
+        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. PushOn passes signal only while pressed.' }
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 5: PushOff ───
     {
       id: 'pushoff',
       title: 'PushOff Button',
       subtitle: 'Normally closed',
-      description: 'Similar to the previous task, but with a PushOff button. With a PushOff, the signal flows normally (LED is on), but when you press the button the signal is interrupted (LED turns off).',
+      description: 'Similar to the previous task, but with a PushOff button. With a PushOff, the signal flows normally (LED is on), but when you press the button the signal is interrupted (LED turns off). Complete the truth table to verify the behavior.',
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
@@ -80,11 +135,12 @@ export const BOOLEAN_COURSE = {
         ],
         connectors: [],
       },
-      tableConfig: null,
+      tableConfig: { inputLabels: ['PushOff'], outputLabels: ['LED'], numInputs: 1, expected: [1, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
-        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
-        if (ledIn && ledIn.value != null) return { correct: true }
-        return { correct: false, hint: 'Connect DC → PushOff → LED. The LED should be on by default.' }
+        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. PushOff blocks signal while pressed.' }
+        return { correct: true }
       },
     },
 
@@ -93,7 +149,7 @@ export const BOOLEAN_COURSE = {
       id: 'toggle',
       title: 'Toggle Switch',
       subtitle: 'Latching switch',
-      description: 'A Toggle switch works like a light switch — click it once to turn on, click again to turn off. Connect DC → Toggle → LED and try it out.',
+      description: 'A Toggle switch works like a light switch — click it once to turn on, click again to turn off. Connect DC → Toggle → LED and try it out. Complete the truth table to verify the behavior.',
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
@@ -106,11 +162,12 @@ export const BOOLEAN_COURSE = {
         ],
         connectors: [],
       },
-      tableConfig: null,
+      tableConfig: { inputLabels: ['Toggle'], outputLabels: ['LED'], numInputs: 1, expected: [0, 1] },
       checkSolution(signals, buttons, tableData, resolve) {
-        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
-        if (ledIn && ledIn.value != null) return { correct: true }
-        return { correct: false, hint: 'Connect DC → Toggle → LED. Click the toggle to turn the LED on.' }
+        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. Toggle passes signal when on.' }
+        return { correct: true }
       },
     },
 
@@ -164,20 +221,45 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputLabels: ['A'], outputLabels: ['OUT'], numInputs: 1 },
+      tableConfig: { inputLabels: ['A'], outputLabels: ['OUT'], numInputs: 1, expected: [1, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        const expected = [1, 0]
-        const rows = 2
-        for (let i = 0; i < rows; i++) {
-          if (!tableData[i] || !tableData[i].filled) return { correct: false, hint: 'Fill all rows of the truth table.' }
-          if (tableData[i].outputs[0] !== expected[i]) return { correct: false, hint: 'Row ' + i + ' is incorrect. NOT should invert the input.' }
-        }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. NOT should invert the input.' }
         return { correct: true }
       },
     },
 
-    // ─── Task 7: AND ───
+    // ─── Task 8: Build a NOT Gate ───
+    {
+      id: 'build-not',
+      title: 'Build a NOT Gate',
+      subtitle: 'Invert from scratch',
+      description: 'Build the NOT gate circuit from scratch. Drag a DC source, a Toggle switch, a NOT gate, and an LED from the toolbox. Wire them: DC → Toggle → NOT → LED. Then toggle the switch and complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'DC', maxCount: 1 },
+          { type: 'Toggle', maxCount: 1, labelMask: 'A' },
+          { type: 'NOT', maxCount: 1 },
+          { type: 'LED', maxCount: 1, labelMask: 'OUT' },
+        ],
+        devices: [],
+        connectors: [],
+      },
+      tableConfig: { inputLabels: ['A'], outputLabels: ['OUT'], numInputs: 1, expected: [1, 0] },
+      checkSolution(signals, buttons, tableData, resolve) {
+        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. NOT should invert the input.' }
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 9: AND ───
     {
       id: 'and',
       title: 'AND Gate',
@@ -203,14 +285,11 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [0, 0, 0, 1] },
       checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        const expected = [0, 0, 0, 1]
-        for (let i = 0; i < 4; i++) {
-          if (!tableData[i] || !tableData[i].filled) return { correct: false, hint: 'Fill all rows of the truth table.' }
-          if (tableData[i].outputs[0] !== expected[i]) return { correct: false, hint: 'Row ' + i + ' is incorrect. AND outputs 1 only when both inputs are 1.' }
-        }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. AND outputs 1 only when both inputs are 1.' }
         return { correct: true }
       },
     },
@@ -241,14 +320,11 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [1, 1, 1, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        const expected = [1, 1, 1, 0]
-        for (let i = 0; i < 4; i++) {
-          if (!tableData[i] || !tableData[i].filled) return { correct: false, hint: 'Fill all rows.' }
-          if (tableData[i].outputs[0] !== expected[i]) return { correct: false, hint: 'Row ' + i + ' is incorrect. NAND outputs 0 only when both inputs are 1.' }
-        }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. NAND outputs 0 only when both inputs are 1.' }
         return { correct: true }
       },
     },
@@ -279,14 +355,11 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [0, 1, 1, 1] },
       checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        const expected = [0, 1, 1, 1]
-        for (let i = 0; i < 4; i++) {
-          if (!tableData[i] || !tableData[i].filled) return { correct: false, hint: 'Fill all rows.' }
-          if (tableData[i].outputs[0] !== expected[i]) return { correct: false, hint: 'Row ' + i + ' is incorrect. OR outputs 0 only when both inputs are 0.' }
-        }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. OR outputs 0 only when both inputs are 0.' }
         return { correct: true }
       },
     },
@@ -317,14 +390,11 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [1, 0, 0, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        const expected = [1, 0, 0, 0]
-        for (let i = 0; i < 4; i++) {
-          if (!tableData[i] || !tableData[i].filled) return { correct: false, hint: 'Fill all rows.' }
-          if (tableData[i].outputs[0] !== expected[i]) return { correct: false, hint: 'Row ' + i + ' is incorrect. NOR outputs 1 only when both inputs are 0.' }
-        }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. NOR outputs 1 only when both inputs are 0.' }
         return { correct: true }
       },
     },
@@ -355,14 +425,11 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [0, 1, 1, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        const expected = [0, 1, 1, 0]
-        for (let i = 0; i < 4; i++) {
-          if (!tableData[i] || !tableData[i].filled) return { correct: false, hint: 'Fill all rows.' }
-          if (tableData[i].outputs[0] !== expected[i]) return { correct: false, hint: 'Row ' + i + ' is incorrect. XOR outputs 1 when inputs differ.' }
-        }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. XOR outputs 1 when inputs differ.' }
         return { correct: true }
       },
     },
@@ -393,14 +460,11 @@ export const BOOLEAN_COURSE = {
           { from: 'led.in0', to: 'gate.out0' },
         ],
       },
-      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2 },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [1, 0, 0, 1] },
       checkSolution(signals, buttons, tableData, resolve) {
         if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        const expected = [1, 0, 0, 1]
-        for (let i = 0; i < 4; i++) {
-          if (!tableData[i] || !tableData[i].filled) return { correct: false, hint: 'Fill all rows.' }
-          if (tableData[i].outputs[0] !== expected[i]) return { correct: false, hint: 'Row ' + i + ' is incorrect. XNOR outputs 1 when inputs are equal.' }
-        }
+        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
+        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. XNOR outputs 1 when inputs are equal.' }
         return { correct: true }
       },
     },

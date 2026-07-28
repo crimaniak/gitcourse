@@ -111,26 +111,10 @@
 
         <p class="lesson-desc">{{ page.description }}</p>
 
-        <!-- SIMCIR container -->
-        <div id="simcir-container" ref="simcirContainer" style="margin:1rem 0; overflow-x:auto;"></div>
-
-        <!-- Truth table -->
-        <div v-if="tableConfig && tableRows.length > 0" class="truth-table-wrap">
-          <h3>Truth Table</h3>
-          <table class="truth-table">
-            <thead>
-              <tr>
-                <th v-for="label in tableConfig.inputLabels">{{ label }}</th>
-                <th v-for="label in tableConfig.outputLabels">{{ label }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in tableRows">
-                <td v-for="val in row.inputs">{{ val }}</td>
-                <td v-for="val in row.outputs" :class="{ placeholder: val === '\u2013' }">{{ val }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Simulator + Truth table side by side -->
+        <div style="display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap;">
+          <div id="simcir-container" ref="simcirContainer" style="margin:1rem 0; overflow-x:auto; flex:1 1 300px;"></div>
+          <div v-if="tableConfig" id="truth-table-container" class="truth-table-wrap" style="flex:1 1 280px;"></div>
         </div>
 
         <!-- Check solution -->

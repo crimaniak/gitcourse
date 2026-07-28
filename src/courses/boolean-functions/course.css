@@ -1,0 +1,156 @@
+/* ───────── SimcirJS overrides ───────── */
+.simcir-workspace {
+  border-color: var(--card-border);
+  background: var(--card-bg);
+}
+
+.simcir-pin-hole {
+  fill: var(--tt-border);
+}
+
+.simcir-toolbox {
+  fill: var(--card-bg);
+}
+
+.simcir-connector {
+  stroke: var(--pico-primary);
+}
+
+.simcir-device {
+  fill: var(--card-bg);
+  stroke: var(--gate-body-stroke);
+}
+
+.simcir-device-selected {
+  stroke: var(--pico-primary);
+}
+
+.simcir-device-label {
+  fill: var(--pico-color);
+}
+
+.simcir-node-type-in {
+  fill: var(--gate-high);
+}
+
+.simcir-node-type-out {
+  fill: var(--gate-low-bg);
+}
+
+.simcir-node {
+  stroke: var(--gate-body-stroke);
+}
+
+.simcir-node-hot {
+  stroke: var(--gate-high);
+}
+
+.simcir-node-hover {
+  stroke: var(--pico-primary);
+}
+
+.simcir-node-label {
+  fill: var(--pico-color);
+}
+
+.simcir-basicset-dc {
+  fill: oklch(0.92 0.10 25 / 0.3);
+}
+
+.simcir-basicset-switch {
+  fill: oklch(0.85 0.08 240 / 0.3);
+}
+
+.simcir-basicset-switch-button-pressed {
+  fill: oklch(0.7 0.25 140) !important;
+}
+
+.simcir-basicset-symbol {
+  stroke: var(--gate-body-stroke);
+}
+
+.simcir-basicset-osc {
+  fill: oklch(0.92 0.10 25 / 0.3);
+}
+
+.simcir-scrollbar {
+  fill: var(--tt-border);
+}
+
+.simcir-scrollbar-bar {
+  fill: var(--card-border);
+}
+
+.simcir-scrollbar-bar:hover {
+  fill: var(--pico-primary);
+}
+
+.simcir-body {
+  display: block;
+}
+
+/* ───────── Truth Table ───────── */
+.truth-table-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.truth-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  min-width: 280px;
+  border: 1px solid var(--tt-border);
+}
+
+.truth-table th {
+  background: var(--tt-header-bg);
+  color: var(--tt-header-text);
+  padding: 0.6rem 0.8rem;
+  text-align: center;
+  font-weight: 600;
+  border: 1px solid var(--tt-border);
+}
+
+.truth-table td {
+  padding: 0.5rem 0.8rem;
+  text-align: center;
+  border: 1px solid var(--tt-border);
+}
+
+.truth-table td.placeholder {
+  color: var(--progress-bg);
+  font-weight: 400;
+}
+
+/* ───────── Result Display ───────── */
+.result-display {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1rem 0;
+}
+
+.result-display.correct {
+  background: var(--gate-high-bg);
+  color: var(--gate-high);
+  border: 2px solid var(--gate-high);
+}
+
+.result-display.incorrect {
+  background: oklch(0.92 0.15 25 / 0.3);
+  color: oklch(0.5 0.22 25);
+  border: 2px solid oklch(0.5 0.22 25);
+}
+
+/* ───────── Mobile tweaks ───────── */
+@media (max-width: 576px) {
+  #simcir-container {
+    overflow-x: auto;
+  }
+  #simcir-container svg {
+    max-width: none;
+  }
+}
