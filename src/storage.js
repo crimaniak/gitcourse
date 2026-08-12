@@ -4,6 +4,7 @@ const defaultData = {
   user: { name: 'Player' },
   progress: {},
   courseParams: {},
+  settings: { language: 'en' },
 }
 
 function load() {
@@ -39,6 +40,14 @@ export function getUser() {
 
 export function setUser(user) {
   update(d => { d.user = { ...d.user, ...user } })
+}
+
+export function getLanguage() {
+  return get().settings?.language || 'en'
+}
+
+export function setLanguage(language) {
+  update(d => { d.settings = { ...d.settings, language } })
 }
 
 export function getCourseProgress(courseId) {

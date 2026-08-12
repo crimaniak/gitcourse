@@ -20,15 +20,12 @@
     </nav>
   </header>
 
-  <main class="container" v-scope>
+  <main class="container" v-scope v-translate>
     <!-- ═══ HOME ═══ -->
     <div v-if="view === 'home'">
       <article style="text-align:center; padding: 2rem 1rem;">
-        <h1>Welcome, {{ user.name }}!</h1>
-        <p style="font-size:1.2rem; max-width:32rem; margin:1rem auto;">
-          Interactive courses that teach you how computers work.
-          Click a course below to start learning!
-        </p>
+        <h1><span>Welcome,</span> {{ user.name }}!</h1>
+        <p style="font-size:1.2rem; max-width:32rem; margin:1rem auto;">Interactive courses that teach you how computers work. Click a course below to start learning!</p>
       </article>
 
       <h2>Available Courses</h2>
@@ -99,7 +96,7 @@
     <div v-if="view === 'page' && page" style="max-width:100%;">
       <nav aria-label="breadcrumb">
         <ul>
-          <li><a :href="'#/course/' + courseId">← Back to {{ course.title }}</a></li>
+          <li><a :href="'#/course/' + courseId"><span>← Back to</span> {{ course.title }}</a></li>
         </ul>
       </nav>
 
@@ -139,12 +136,12 @@
 
         <!-- Navigation -->
         <div class="page-nav">
-          <a v-if="pageIndex > 0" :href="'#/page/' + courseId + '/' + course.pages[pageIndex - 1].id" class="secondary nav-btn" role="button">
-            ← Previous: {{ course.pages[pageIndex - 1].title }}
+          <a v-if="prevPage" :href="'#/page/' + courseId + '/' + prevPage?.id" class="secondary nav-btn" role="button">
+            <span>← Previous:</span> {{ prevPage?.title }}
           </a>
           <div v-else></div>
-          <a v-if="pageIndex < course.pages.length - 1" :href="'#/page/' + courseId + '/' + course.pages[pageIndex + 1].id" class="primary nav-btn" role="button" :class="{ disabled: !pageDone(page.id) }">
-            Next: {{ course.pages[pageIndex + 1].title }} →
+          <a v-if="nextPage" :href="'#/page/' + courseId + '/' + nextPage?.id" class="primary nav-btn" role="button" :class="{ disabled: !pageDone(page.id) }">
+            <span>Next:</span> {{ nextPage?.title }} →
           </a>
           <button v-else class="primary nav-btn" @click="finishCourse" :disabled="!pageDone(page.id)">🎉 Finish Course!</button>
         </div>
@@ -162,6 +159,16 @@
           <button class="primary" @click="saveName">Save</button>
         </div>
         <small v-if="nameSaved" style="color:var(--pico-primary);">✅ Name saved!</small>
+      </article>
+
+      <article class="settings-section">
+        <h3>Language</h3>
+        <select v-model="language" @change="onLanguageChange" style="max-width:20rem;">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="de">Deutsch</option>
+          <option value="uk">Українська</option>
+        </select>
       </article>
 
       <article class="settings-section">

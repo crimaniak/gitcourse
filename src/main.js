@@ -4,9 +4,13 @@ import { getAllCourses, getCourse } from './courses/index.js'
 import { getInputCombination, getOutputValues } from './courses/boolean-functions/table.js'
 import { TruthTable } from './courses/boolean-functions/TruthTable.js'
 import { SimulationManager } from './courses/boolean-functions/SimulationManager.js'
+import { createTranslator } from './i18n/index.js'
+import { createTranslateDirective } from './i18n/translateDirective.js'
 import {
   getUser,
   setUser,
+  getLanguage,
+  setLanguage,
   getCourseProgress,
   getCourseParams,
   setCourseParam,
@@ -19,10 +23,14 @@ import {
 
 const sim = new SimulationManager()
 
+const language = getLanguage()
+const translator = createTranslator(language)
+
 export const state = reactive({
   view: 'home',
   courseId: '',
   pageId: '',
+  language,
 
   userNameInput: '',
   nameSaved: false,
@@ -40,14 +48,22 @@ export const state = reactive({
     return getUser()
   },
   get courses() {
-    return getAllCourses()
+    return getAllCourses().map(c => translator.translateObject(c))
   },
   get course() {
-    return this.courseId ? getCourse(this.courseId) : null
+    return this.courseId ? translator.translateObject(getCourse(this.courseId)) : null
   },
   get pageIndex() {
     const c = this.course
     return c ? c.pages.findIndex(p => p.id === this.pageId) : -1
+  },
+  get prevPage() {
+    const c = this.course, idx = this.pageIndex
+    return c && idx > 0 ? c.pages[idx - 1] : null
+  },
+  get nextPage() {
+    const c = this.course, idx = this.pageIndex
+    return c && idx >= 0 && idx < c.pages.length - 1 ? c.pages[idx + 1] : null
   },
   get page() {
     const c = this.course
@@ -131,12 +147,12 @@ export const state = reactive({
     const result = page.checkSolution(sim.signals, sim.buttons, this.tableData, resolve)
     this.isCorrect = result.correct
     if (result.correct) {
-      this.resultMessage = '✅ Correct!'
+      this.resultMessage = translator.translateObject('✅ Correct!')
       this.solutionChecked = true
       completePage(this.courseId, this.pageId)
       this._revision++
     } else {
-      this.resultMessage = '❌ ' + (result.hint || 'Try again.')
+      this.resultMessage = '❌ ' + translator.translateObject(result.hint || 'Try again.')
       this.solutionChecked = false
     }
   },
@@ -151,6 +167,11 @@ export const state = reactive({
     }
   },
 
+  onLanguageChange(event) {
+    setLanguage(event.target.value)
+    window.location.reload()
+  },
+
   exportData() { exportStorage() },
 
   triggerImport() {
@@ -160,28 +181,28 @@ export const state = reactive({
   importData(event) {
     const file = event.target.files[0]
     if (!file) return
-    this.importStatus = 'Importing...'
+    this.importStatus = translator.translateObject('Importing...')
     importStorage(file)
       .then(() => {
         this._revision++
-        this.importStatus = '✅ Data imported! Reloading...'
+        this.importStatus = translator.translateObject('✅ Data imported! Reloading...')
         setTimeout(() => window.location.reload(), 1000)
       })
       .catch((err) => {
-        this.importStatus = '❌ ' + err.message
+        this.importStatus = '❌ ' + translator.translateObject(err.message)
       })
   },
 
   resetAll() {
-    if (confirm('Delete ALL progress for all courses? This cannot be undone!')) {
+    if (confirm(translator.translateObject('Delete ALL progress for all courses? This cannot be undone!'))) {
       resetProgress()
-      this.importStatus = '✅ All progress reset.'
+      this.importStatus = translator.translateObject('✅ All progress reset.')
       setTimeout(() => window.location.reload(), 1000)
     }
   },
 
   startOver() {
-    if (confirm('Reset all progress for this course?')) {
+    if (confirm(translator.translateObject('Reset all progress for this course?'))) {
       resetProgress(this.courseId)
       setCurrentPage(this.courseId, this.course.pages[0].id)
       this._revision++
@@ -189,7 +210,9 @@ export const state = reactive({
   },
 })
 
-createApp(state).mount()
+createApp(state)
+  .directive('translate', createTranslateDirective(translator))
+  .mount()
 
 sim.onChange(() => {
   const tc = state.tableConfig
@@ -205,6 +228,10 @@ sim.onChange(() => {
 
 window.addEventListener('hashchange', syncFromHash)
 syncFromHash()
+
+document.documentElement.lang = language
+document.title = translator.translateObject('GitCourse — Interactive Learning')
+translator.translateNode(document.getElementById('app-header'))
 
 function syncFromHash() {
   const hash = window.location.hash.slice(1) || '/'
@@ -226,7 +253,7 @@ function syncFromHash() {
 
       import(`./courses/${state.courseId}/course.css`).catch(() => {})
 
-      const c = getCourse(state.courseId)
+      const c = state.course
       const p = c ? c.pages.find(pg => pg.id === state.pageId) : null
       if (p) {
         state.resultMessage = ''
@@ -245,7 +272,10 @@ function syncFromHash() {
           if (p.simulation) {
             sim.init(p.simulation)
             const ttc = document.getElementById('truth-table-container')
-            if (ttc && state.tableData) state.tableData.render(ttc)
+            if (ttc && state.tableData) {
+              state.tableData.render(ttc)
+              translator.translateNode(ttc)
+            }
           }
         })
       }
