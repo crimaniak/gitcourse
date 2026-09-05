@@ -58,4 +58,17 @@ export class SimulationManager {
   resolveLabel(label) {
     return this._labelMap[label] || label
   }
+
+  getSchema() {
+    if (!this.workspace) return null
+    try {
+      const data = simcir.controller(this.workspace).data()
+      return {
+        devices: (data.devices || []).map(d => ({ ...d })),
+        connectors: data.connectors || [],
+      }
+    } catch (e) {
+      return null
+    }
+  }
 }

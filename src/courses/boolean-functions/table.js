@@ -12,10 +12,13 @@ export function createTableData(inputLabels, outputLabels) {
   return data
 }
 
-export function getInputCombination(signals, inputDeviceIds) {
+export function getInputCombination(signals, inputDeviceIds, buttons = []) {
   return inputDeviceIds.map(id => {
     const signal = signals.find(s => s.deviceId === id && s.type === 'out')
-    return signal && signal.value != null ? signal.value : 0
+    let value = signal && signal.value != null ? signal.value : 0
+    const button = buttons.find(b => b.deviceId === id)
+    if (button && button.type === 'PushOff') value = value ? 0 : 1
+    return value
   })
 }
 

@@ -1,5 +1,202 @@
+import { checkSchemaAgainstReferences } from './schemaCheck.js'
+
 const SIM_W = 600
 const SIM_H = 260
+
+// Reference schematics for tasks where the user edits the circuit.
+// Ids are arbitrary (SchemaComparator ignores them); device types and wiring
+// are compared, labels are ignored.
+const REF_DC_LED = {
+  devices: [
+    { type: 'DC', id: 'dc' },
+    { type: 'LED', id: 'led' },
+  ],
+  connectors: [
+    { from: 'dc.out0', to: 'led.in0' },
+  ],
+}
+
+const REF_DC_PUSHON_LED = {
+  devices: [
+    { type: 'DC', id: 'dc' },
+    { type: 'PushOn', id: 'btn' },
+    { type: 'LED', id: 'led' },
+  ],
+  connectors: [
+    { from: 'dc.out0', to: 'btn.in0' },
+    { from: 'btn.out0', to: 'led.in0' },
+  ],
+}
+
+const REF_DC_PUSHOFF_LED = {
+  devices: [
+    { type: 'DC', id: 'dc' },
+    { type: 'PushOff', id: 'btn' },
+    { type: 'LED', id: 'led' },
+  ],
+  connectors: [
+    { from: 'dc.out0', to: 'btn.in0' },
+    { from: 'btn.out0', to: 'led.in0' },
+  ],
+}
+
+const REF_DC_TOGGLE_LED = {
+  devices: [
+    { type: 'DC', id: 'dc' },
+    { type: 'Toggle', id: 'tog' },
+    { type: 'LED', id: 'led' },
+  ],
+  connectors: [
+    { from: 'dc.out0', to: 'tog.in0' },
+    { from: 'tog.out0', to: 'led.in0' },
+  ],
+}
+
+const REF_DC_TOGGLE_BUF_LED = {
+  devices: [
+    { type: 'DC', id: 'dc' },
+    { type: 'Toggle', id: 'tog' },
+    { type: 'BUF', id: 'buf' },
+    { type: 'LED', id: 'led' },
+  ],
+  connectors: [
+    { from: 'dc.out0', to: 'tog.in0' },
+    { from: 'tog.out0', to: 'buf.in0' },
+    { from: 'buf.out0', to: 'led.in0' },
+  ],
+}
+
+const REF_BUILD_NOT = {
+  devices: [
+    { type: 'DC', id: 'dc' },
+    { type: 'Toggle', id: 'tog' },
+    { type: 'NOT', id: 'gate' },
+    { type: 'LED', id: 'led' },
+  ],
+  connectors: [
+    { from: 'dc.out0', to: 'tog.in0' },
+    { from: 'tog.out0', to: 'gate.in0' },
+    { from: 'gate.out0', to: 'led.in0' },
+  ],
+}
+
+// RS latch: two valid role assignments (either NAND may take the Set side).
+const REF_RS_TRIGGER = [0, 1].map(swapped => {
+  const na = swapped ? 'nb' : 'na'
+  const nb = swapped ? 'na' : 'nb'
+  return {
+    devices: [
+      { type: 'DC', id: 'dc' },
+      { type: 'PushOff', id: 'pbS' },
+      { type: 'PushOff', id: 'pbR' },
+      { type: 'NAND', id: 'na' },
+      { type: 'NAND', id: 'nb' },
+      { type: 'LED', id: 'ledQ' },
+      { type: 'LED', id: 'ledNQ' },
+    ],
+    connectors: [
+      { from: 'dc.out0', to: 'pbS.in0' },
+      { from: 'dc.out0', to: 'pbR.in0' },
+      { from: 'pbS.out0', to: na + '.in0' },
+      { from: nb + '.out0', to: na + '.in1' },
+      { from: 'pbR.out0', to: nb + '.in0' },
+      { from: na + '.out0', to: nb + '.in1' },
+      { from: na + '.out0', to: 'ledQ.in0' },
+      { from: nb + '.out0', to: 'ledNQ.in0' },
+    ],
+  }
+})
+
+// Gated D latch: either physical NAND may take the Set side.
+const REF_D_TRIGGER = [0, 1].map(swapped => {
+  const ns = swapped ? 'nandR' : 'nandS'
+  const nr = swapped ? 'nandS' : 'nandR'
+  return {
+    devices: [
+      { type: 'DC', id: 'dc' },
+      { type: 'Toggle', id: 'togD' },
+      { type: 'PushOn', id: 'pbClk' },
+      { type: 'NOT', id: 'not' },
+      { type: 'NAND', id: 'nandS' },
+      { type: 'NAND', id: 'nandR' },
+      { type: 'RS-FF', id: 'rs' },
+      { type: 'LED', id: 'ledQ' },
+      { type: 'LED', id: 'ledNQ' },
+    ],
+    connectors: [
+      { from: 'dc.out0', to: 'togD.in0' },
+      { from: 'dc.out0', to: 'pbClk.in0' },
+      { from: 'togD.out0', to: 'not.in0' },
+      { from: 'togD.out0', to: ns + '.in0' },
+      { from: 'pbClk.out0', to: ns + '.in1' },
+      { from: ns + '.out0', to: 'rs.in0' },
+      { from: 'pbClk.out0', to: nr + '.in0' },
+      { from: 'not.out0', to: nr + '.in1' },
+      { from: nr + '.out0', to: 'rs.in1' },
+      { from: 'rs.out0', to: 'ledQ.in0' },
+      { from: 'rs.out1', to: 'ledNQ.in0' },
+    ],
+  }
+})
+
+// Gated JK latch: either physical NAND may take the J side.
+const REF_JK_TRIGGER = [0, 1].map(swapped => {
+  const nj = swapped ? 'nandK' : 'nandJ'
+  const nk = swapped ? 'nandJ' : 'nandK'
+  return {
+    devices: [
+      { type: 'DC', id: 'dc' },
+      { type: 'Toggle', id: 'togJ' },
+      { type: 'PushOn', id: 'pbClk' },
+      { type: 'Toggle', id: 'togK' },
+      { type: 'NAND', id: 'nandJ' },
+      { type: 'NAND', id: 'nandK' },
+      { type: 'RS-FF', id: 'rs' },
+      { type: 'LED', id: 'ledQ' },
+      { type: 'LED', id: 'ledNQ' },
+    ],
+    connectors: [
+      { from: 'dc.out0', to: 'togJ.in0' },
+      { from: 'dc.out0', to: 'pbClk.in0' },
+      { from: 'dc.out0', to: 'togK.in0' },
+      { from: 'togJ.out0', to: nj + '.in0' },
+      { from: 'pbClk.out0', to: nj + '.in1' },
+      { from: nj + '.out0', to: 'rs.in0' },
+      { from: 'togK.out0', to: nk + '.in0' },
+      { from: 'pbClk.out0', to: nk + '.in1' },
+      { from: nk + '.out0', to: 'rs.in1' },
+      { from: 'rs.out0', to: 'ledQ.in0' },
+      { from: 'rs.out1', to: 'ledNQ.in0' },
+    ],
+  }
+})
+
+export const REFERENCE_SCHEMAS = {
+  DC_LED: REF_DC_LED,
+  DC_PUSHON_LED: REF_DC_PUSHON_LED,
+  DC_PUSHOFF_LED: REF_DC_PUSHOFF_LED,
+  DC_TOGGLE_LED: REF_DC_TOGGLE_LED,
+  DC_TOGGLE_BUF_LED: REF_DC_TOGGLE_BUF_LED,
+  BUILD_NOT: REF_BUILD_NOT,
+  RS_TRIGGER: REF_RS_TRIGGER,
+  D_TRIGGER: REF_D_TRIGGER,
+  JK_TRIGGER: REF_JK_TRIGGER,
+}
+
+function checkTruthTable(tableData, incorrectHint, incompleteHint = 'Fill all rows of the truth table.') {
+  if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
+  if (!tableData.isComplete()) return { correct: false, hint: incompleteHint }
+  if (!tableData.isCorrect()) return { correct: false, hint: incorrectHint }
+  return { correct: true }
+}
+
+function checkTriggerLit(signals, resolve, outputLabels, hint) {
+  const lit = outputLabels.some(label => {
+    const s = signals.find(sig => sig.deviceId === resolve(label) && sig.type === 'in')
+    return s && s.value != null
+  })
+  return lit ? { correct: true } : { correct: false, hint }
+}
 
 export const BOOLEAN_COURSE = {
   id: 'boolean-electronics',
@@ -25,12 +222,15 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: null,
-      checkSolution(signals, buttons, tableData, resolve) {
-        const dcOut = signals.find(s => s.deviceId === resolve('DC') && s.type === 'out')
-        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
-        if (!dcOut || !ledIn) return { correct: false, hint: 'Could not read signals.' }
-        if (ledIn.value != null) return { correct: true }
-        return { correct: false, hint: 'The LED is not lit. Make sure you connected the DC output to the LED input.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        if (!schema) {
+          const dcOut = signals.find(s => s.deviceId === resolve('DC') && s.type === 'out')
+          const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
+          if (!dcOut || !ledIn) return { correct: false, hint: 'Could not read signals.' }
+          if (ledIn.value != null) return { correct: true }
+          return { correct: false, hint: 'The LED is not lit. Make sure you connected the DC output to the LED input.' }
+        }
+        return checkSchemaAgainstReferences(schema, REF_DC_LED)
       },
     },
 
@@ -53,12 +253,15 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: null,
-      checkSolution(signals, buttons, tableData, resolve) {
-        const dcOut = signals.find(s => s.deviceId === resolve('DC') && s.type === 'out')
-        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
-        if (!dcOut || !ledIn) return { correct: false, hint: 'Add a DC source and an LED to the field.' }
-        if (ledIn.value != null) return { correct: true }
-        return { correct: false, hint: 'Connect DC output to LED input.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        if (!schema) {
+          const dcOut = signals.find(s => s.deviceId === resolve('DC') && s.type === 'out')
+          const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
+          if (!dcOut || !ledIn) return { correct: false, hint: 'Add a DC source and an LED to the field.' }
+          if (ledIn.value != null) return { correct: true }
+          return { correct: false, hint: 'Connect DC output to LED input.' }
+        }
+        return checkSchemaAgainstReferences(schema, REF_DC_LED)
       },
     },
 
@@ -81,10 +284,11 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: { inputLabels: ['PushOn'], outputLabels: ['LED'], numInputs: 1, expected: [0, 1] },
-      checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. PushOn passes signal only while pressed.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        if (!schema) return checkTruthTable(tableData, 'Some rows are incorrect. PushOn passes signal only while pressed.')
+        const schemaResult = checkSchemaAgainstReferences(schema, REF_DC_PUSHON_LED)
+        if (!schemaResult.correct) return schemaResult
+        return checkTruthTable(tableData, 'Some rows are incorrect. PushOn passes signal only while pressed.')
         return { correct: true }
       },
     },
@@ -109,10 +313,11 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: { inputLabels: ['PushOn'], outputLabels: ['LED'], numInputs: 1, expected: [0, 1] },
-      checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. PushOn passes signal only while pressed.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        if (!schema) return checkTruthTable(tableData, 'Some rows are incorrect. PushOn passes signal only while pressed.')
+        const schemaResult = checkSchemaAgainstReferences(schema, REF_DC_PUSHON_LED)
+        if (!schemaResult.correct) return schemaResult
+        return checkTruthTable(tableData, 'Some rows are incorrect. PushOn passes signal only while pressed.')
         return { correct: true }
       },
     },
@@ -136,10 +341,11 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: { inputLabels: ['PushOff'], outputLabels: ['LED'], numInputs: 1, expected: [1, 0] },
-      checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. PushOff blocks signal while pressed.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        if (!schema) return checkTruthTable(tableData, 'Some rows are incorrect. PushOff blocks signal while pressed.')
+        const schemaResult = checkSchemaAgainstReferences(schema, REF_DC_PUSHOFF_LED)
+        if (!schemaResult.correct) return schemaResult
+        return checkTruthTable(tableData, 'Some rows are incorrect. PushOff blocks signal while pressed.')
         return { correct: true }
       },
     },
@@ -163,10 +369,11 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: { inputLabels: ['Toggle'], outputLabels: ['LED'], numInputs: 1, expected: [0, 1] },
-      checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. Toggle passes signal when on.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        if (!schema) return checkTruthTable(tableData, 'Some rows are incorrect. Toggle passes signal when on.')
+        const schemaResult = checkSchemaAgainstReferences(schema, REF_DC_TOGGLE_LED)
+        if (!schemaResult.correct) return schemaResult
+        return checkTruthTable(tableData, 'Some rows are incorrect. Toggle passes signal when on.')
         return { correct: true }
       },
     },
@@ -191,10 +398,13 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: null,
-      checkSolution(signals, buttons, tableData, resolve) {
-        const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
-        if (ledIn && ledIn.value != null) return { correct: true }
-        return { correct: false, hint: 'Connect DC → Toggle → BUF → LED. The LED should turn on when you toggle the switch.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        if (!schema) {
+          const ledIn = signals.find(s => s.deviceId === resolve('LED') && s.type === 'in')
+          if (ledIn && ledIn.value != null) return { correct: true }
+          return { correct: false, hint: 'Connect DC → Toggle → BUF → LED. The LED should turn on when you toggle the switch.' }
+        }
+        return checkSchemaAgainstReferences(schema, REF_DC_TOGGLE_BUF_LED)
       },
     },
 
@@ -223,9 +433,7 @@ export const BOOLEAN_COURSE = {
       },
       tableConfig: { inputLabels: ['A'], outputLabels: ['OUT'], numInputs: 1, expected: [1, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. NOT should invert the input.' }
+        return checkTruthTable(tableData, 'Some rows are incorrect. NOT should invert the input.')
         return { correct: true }
       },
     },
@@ -251,10 +459,11 @@ export const BOOLEAN_COURSE = {
         connectors: [],
       },
       tableConfig: { inputLabels: ['A'], outputLabels: ['OUT'], numInputs: 1, expected: [1, 0] },
-      checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. NOT should invert the input.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        if (!schema) return checkTruthTable(tableData, 'Some rows are incorrect. NOT should invert the input.')
+        const schemaResult = checkSchemaAgainstReferences(schema, REF_BUILD_NOT)
+        if (!schemaResult.correct) return schemaResult
+        return checkTruthTable(tableData, 'Some rows are incorrect. NOT should invert the input.')
         return { correct: true }
       },
     },
@@ -287,9 +496,7 @@ export const BOOLEAN_COURSE = {
       },
       tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [0, 0, 0, 1] },
       checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows of the truth table.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. AND outputs 1 only when both inputs are 1.' }
+        return checkTruthTable(tableData, 'Some rows are incorrect. AND outputs 1 only when both inputs are 1.')
         return { correct: true }
       },
     },
@@ -322,9 +529,7 @@ export const BOOLEAN_COURSE = {
       },
       tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [1, 1, 1, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. NAND outputs 0 only when both inputs are 1.' }
+        return checkTruthTable(tableData, 'Some rows are incorrect. NAND outputs 0 only when both inputs are 1.', 'Fill all rows.')
         return { correct: true }
       },
     },
@@ -357,9 +562,7 @@ export const BOOLEAN_COURSE = {
       },
       tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [0, 1, 1, 1] },
       checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. OR outputs 0 only when both inputs are 0.' }
+        return checkTruthTable(tableData, 'Some rows are incorrect. OR outputs 0 only when both inputs are 0.', 'Fill all rows.')
         return { correct: true }
       },
     },
@@ -392,9 +595,7 @@ export const BOOLEAN_COURSE = {
       },
       tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [1, 0, 0, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. NOR outputs 1 only when both inputs are 0.' }
+        return checkTruthTable(tableData, 'Some rows are incorrect. NOR outputs 1 only when both inputs are 0.', 'Fill all rows.')
         return { correct: true }
       },
     },
@@ -427,9 +628,7 @@ export const BOOLEAN_COURSE = {
       },
       tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [0, 1, 1, 0] },
       checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. XOR outputs 1 when inputs differ.' }
+        return checkTruthTable(tableData, 'Some rows are incorrect. XOR outputs 1 when inputs differ.', 'Fill all rows.')
         return { correct: true }
       },
     },
@@ -462,14 +661,50 @@ export const BOOLEAN_COURSE = {
       },
       tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [1, 0, 0, 1] },
       checkSolution(signals, buttons, tableData, resolve) {
-        if (!tableData) return { correct: false, hint: 'Complete the truth table.' }
-        if (!tableData.isComplete()) return { correct: false, hint: 'Fill all rows.' }
-        if (!tableData.isCorrect()) return { correct: false, hint: 'Some rows are incorrect. XNOR outputs 1 when inputs are equal.' }
+        return checkTruthTable(tableData, 'Some rows are incorrect. XNOR outputs 1 when inputs are equal.', 'Fill all rows.')
         return { correct: true }
       },
     },
 
-    // ─── Task 13: RS Trigger ───
+    // ─── Task 13: Investigate RS Trigger ───
+    {
+      id: 'investigate-rs-trigger',
+      title: 'Investigate RS Trigger',
+      subtitle: 'Watch it in action',
+      description: 'This RS (Reset-Set) trigger is already built from two cross-coupled NAND gates. Press the ~S (Set) button to set Q=1, press ~R (Reset) to reset Q=0. Observe how the two NAND gates hold the last state — the memory effect. Q and ~Q are always opposite.',
+      simulation: {
+        width: 700, height: 280,
+        showToolbox: false,
+        canAdd: false, canRemove: false, canMove: false,
+        canRewire: false, canEdit: false,
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'PushOff', id: 'pbS', x: 112, y: 36, label: '~S' },
+          { type: 'PushOff', id: 'pbR', x: 112, y: 180, label: '~R' },
+          { type: 'NAND', id: 'na', x: 240, y: 56, label: 'NAND' },
+          { type: 'NAND', id: 'nb', x: 240, y: 150, label: 'NAND' },
+          { type: 'LED', id: 'ledQ', x: 430, y: 60, label: 'Q' },
+          { type: 'LED', id: 'ledNQ', x: 430, y: 150, label: '~Q' },
+        ],
+        connectors: [
+          { from: 'pbS.in0', to: 'dc.out0' },
+          { from: 'pbR.in0', to: 'dc.out0' },
+          { from: 'na.in0', to: 'pbS.out0' },
+          { from: 'na.in1', to: 'nb.out0' },
+          { from: 'nb.in0', to: 'pbR.out0' },
+          { from: 'nb.in1', to: 'na.out0' },
+          { from: 'ledQ.in0', to: 'na.out0' },
+          { from: 'ledNQ.in0', to: 'nb.out0' },
+        ],
+      },
+      tableConfig: null,
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        return checkTriggerLit(signals, resolve, ['Q', '~Q'],
+          'Press the ~S or ~R buttons to change the state. One of the Q or ~Q LEDs should stay lit.')
+      },
+    },
+
+    // ─── Task 14: Build RS Trigger ───
     {
       id: 'rs-trigger',
       title: 'Build RS Trigger',
@@ -496,18 +731,66 @@ export const BOOLEAN_COURSE = {
         ],
       },
       tableConfig: null,
-      checkSolution(signals, buttons, tableData, resolve) {
-        const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
-        const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
-        const hasQ = qSig && qSig.value != null
-        const hasNQ = nqSig && nqSig.value != null
-        if (hasQ && hasNQ) return { correct: true }
-        if (hasQ) return { correct: false, hint: 'Q is working, but ~Q (inverted output) is not connected. Make sure both NANDs are cross-connected.' }
-        return { correct: false, hint: 'Add two NAND gates. Connect each NAND output to the other NAND input. Connect ~S to one NAND and ~R to the other. Wire outputs to Q and ~Q LEDs.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        const legacyCheck = () => {
+          const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
+          const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
+          const hasQ = qSig && qSig.value != null
+          const hasNQ = nqSig && nqSig.value != null
+          if (hasQ && hasNQ) return { correct: true }
+          if (hasQ) return { correct: false, hint: 'Q is working, but ~Q (inverted output) is not connected. Make sure both NANDs are cross-connected.' }
+          return { correct: false, hint: 'Add two NAND gates. Connect each NAND output to the other NAND input. Connect ~S to one NAND and ~R to the other. Wire outputs to Q and ~Q LEDs.' }
+        }
+        if (!schema) return legacyCheck()
+        const schemaResult = checkSchemaAgainstReferences(schema, REF_RS_TRIGGER)
+        return schemaResult.correct ? schemaResult : legacyCheck()
       },
     },
 
-    // ─── Task 14: JK Trigger ───
+    // ─── Task 15: Investigate JK Trigger ───
+    {
+      id: 'investigate-jk-trigger',
+      title: 'Investigate JK Trigger',
+      subtitle: 'Watch it in action',
+      description: 'This JK trigger is already built. It uses an RS-FF plus two NAND gates. Set J or K with the toggles, then press CLK to sample them: J sets Q=1, K resets Q=0. When both J and K are ON, Q toggles on each clock pulse. Observe how Q and ~Q change.',
+      simulation: {
+        width: 700, height: 300,
+        showToolbox: false,
+        canAdd: false, canRemove: false, canMove: false,
+        canRewire: false, canEdit: false,
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: 130, label: 'DC' },
+          { type: 'Toggle', id: 'togJ', x: 96, y: 48, label: 'J' },
+          { type: 'PushOn', id: 'pbClk', x: 96, y: 120, label: 'CLK' },
+          { type: 'Toggle', id: 'togK', x: 96, y: 192, label: 'K' },
+          { type: 'NAND', id: 'nandJ', x: 200, y: 56, label: 'NAND' },
+          { type: 'NAND', id: 'nandK', x: 200, y: 160, label: 'NAND' },
+          { type: 'RS-FF', id: 'rs', x: 360, y: 100, label: 'RS-FF' },
+          { type: 'LED', id: 'ledQ', x: 560, y: 60, label: 'Q' },
+          { type: 'LED', id: 'ledNQ', x: 560, y: 180, label: '~Q' },
+        ],
+        connectors: [
+          { from: 'togJ.in0', to: 'dc.out0' },
+          { from: 'pbClk.in0', to: 'dc.out0' },
+          { from: 'togK.in0', to: 'dc.out0' },
+          { from: 'nandJ.in0', to: 'togJ.out0' },
+          { from: 'nandJ.in1', to: 'pbClk.out0' },
+          { from: 'rs.in0', to: 'nandJ.out0' },
+          { from: 'nandK.in0', to: 'togK.out0' },
+          { from: 'nandK.in1', to: 'pbClk.out0' },
+          { from: 'rs.in1', to: 'nandK.out0' },
+          { from: 'ledQ.in0', to: 'rs.out0' },
+          { from: 'ledNQ.in0', to: 'rs.out1' },
+        ],
+      },
+      tableConfig: null,
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        return checkTriggerLit(signals, resolve, ['Q', '~Q'],
+          'Set J or K, then press CLK to apply the input. One of the Q or ~Q LEDs should stay lit.')
+      },
+    },
+
+    // ─── Task 16: Build JK Trigger ───
     {
       id: 'jk-trigger',
       title: 'Build JK Trigger',
@@ -538,18 +821,66 @@ export const BOOLEAN_COURSE = {
         ],
       },
       tableConfig: null,
-      checkSolution(signals, buttons, tableData, resolve) {
-        const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
-        const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
-        const hasQ = qSig && qSig.value != null
-        const hasNQ = nqSig && nqSig.value != null
-        if (hasQ && hasNQ) return { correct: true }
-        if (hasQ) return { correct: false, hint: 'Q works, but ~Q LED is not lit. Make sure both outputs are connected.' }
-        return { correct: false, hint: 'Build the JK trigger: RS-FF + 3 NANDs + NOT. Connect J, CLK, K inputs, and wire Q and ~Q outputs.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        const legacyCheck = () => {
+          const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
+          const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
+          const hasQ = qSig && qSig.value != null
+          const hasNQ = nqSig && nqSig.value != null
+          if (hasQ && hasNQ) return { correct: true }
+          if (hasQ) return { correct: false, hint: 'Q works, but ~Q LED is not lit. Make sure both outputs are connected.' }
+          return { correct: false, hint: 'Build the JK trigger: RS-FF + 3 NANDs + NOT. Connect J, CLK, K inputs, and wire Q and ~Q outputs.' }
+        }
+        if (!schema) return legacyCheck()
+        const schemaResult = checkSchemaAgainstReferences(schema, REF_JK_TRIGGER)
+        return schemaResult.correct ? schemaResult : legacyCheck()
       },
     },
 
-    // ─── Task 15: D Trigger ───
+    // ─── Task 17: Investigate D Trigger ───
+    {
+      id: 'investigate-d-trigger',
+      title: 'Investigate D Trigger',
+      subtitle: 'Watch it in action',
+      description: 'This D (Data) trigger is already built. Set D with the toggle, then press CLK: Q copies the value of D. If you press CLK again without changing D, Q stays the same. This is how memory captures and holds a data value.',
+      simulation: {
+        width: 700, height: 260,
+        showToolbox: false,
+        canAdd: false, canRemove: false, canMove: false,
+        canRewire: false, canEdit: false,
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: 110, label: 'DC' },
+          { type: 'Toggle', id: 'togD', x: 96, y: 40, label: 'D' },
+          { type: 'PushOn', id: 'pbClk', x: 96, y: 120, label: 'CLK' },
+          { type: 'NOT', id: 'not', x: 200, y: 56, label: 'NOT' },
+          { type: 'NAND', id: 'nandS', x: 280, y: 70, label: 'NAND' },
+          { type: 'NAND', id: 'nandR', x: 280, y: 160, label: 'NAND' },
+          { type: 'RS-FF', id: 'rs', x: 420, y: 100, label: 'RS-FF' },
+          { type: 'LED', id: 'ledQ', x: 560, y: 60, label: 'Q' },
+          { type: 'LED', id: 'ledNQ', x: 560, y: 150, label: '~Q' },
+        ],
+        connectors: [
+          { from: 'togD.in0', to: 'dc.out0' },
+          { from: 'pbClk.in0', to: 'dc.out0' },
+          { from: 'not.in0', to: 'togD.out0' },
+          { from: 'nandS.in0', to: 'togD.out0' },
+          { from: 'nandS.in1', to: 'pbClk.out0' },
+          { from: 'rs.in0', to: 'nandS.out0' },
+          { from: 'nandR.in0', to: 'pbClk.out0' },
+          { from: 'nandR.in1', to: 'not.out0' },
+          { from: 'rs.in1', to: 'nandR.out0' },
+          { from: 'ledQ.in0', to: 'rs.out0' },
+          { from: 'ledNQ.in0', to: 'rs.out1' },
+        ],
+      },
+      tableConfig: null,
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        return checkTriggerLit(signals, resolve, ['Q', '~Q'],
+          'Set D, then press CLK to copy the value. One of the Q or ~Q LEDs should stay lit.')
+      },
+    },
+
+    // ─── Task 18: Build D Trigger ───
     {
       id: 'd-trigger',
       title: 'Build D Trigger',
@@ -578,18 +909,23 @@ export const BOOLEAN_COURSE = {
         ],
       },
       tableConfig: null,
-      checkSolution(signals, buttons, tableData, resolve) {
-        const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
-        const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
-        const hasQ = qSig && qSig.value != null
-        const hasNQ = nqSig && nqSig.value != null
-        if (hasQ && hasNQ) return { correct: true }
-        if (hasQ) return { correct: false, hint: 'Q works, but ~Q LED is not lit.' }
-        return { correct: false, hint: 'Build the D trigger: RS-FF + 2 NANDs + NOT. Connect D and CLK inputs, wire Q and ~Q to LEDs.' }
+      checkSolution(signals, buttons, tableData, resolve, schema) {
+        const legacyCheck = () => {
+          const qSig = signals.find(s => s.deviceId === resolve('Q') && s.type === 'in')
+          const nqSig = signals.find(s => s.deviceId === resolve('~Q') && s.type === 'in')
+          const hasQ = qSig && qSig.value != null
+          const hasNQ = nqSig && nqSig.value != null
+          if (hasQ && hasNQ) return { correct: true }
+          if (hasQ) return { correct: false, hint: 'Q works, but ~Q LED is not lit.' }
+          return { correct: false, hint: 'Build the D trigger: RS-FF + 2 NANDs + NOT. Connect D and CLK inputs, wire Q and ~Q to LEDs.' }
+        }
+        if (!schema) return legacyCheck()
+        const schemaResult = checkSchemaAgainstReferences(schema, REF_D_TRIGGER)
+        return schemaResult.correct ? schemaResult : legacyCheck()
       },
     },
 
-    // ─── Task 16: Counter ───
+    // ─── Task 19: Counter ───
     {
       id: 'counter',
       title: '8-Bit Counter',

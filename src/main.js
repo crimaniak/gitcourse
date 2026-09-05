@@ -144,7 +144,7 @@ export const state = reactive({
     const page = this.page
     if (!page) return
     const resolve = lbl => sim.resolveLabel(lbl)
-    const result = page.checkSolution(sim.signals, sim.buttons, this.tableData, resolve)
+    const result = page.checkSolution(sim.signals, sim.buttons, this.tableData, resolve, sim.getSchema())
     this.isCorrect = result.correct
     if (result.correct) {
       this.resultMessage = translator.translateObject('✅ Correct!')
@@ -219,7 +219,7 @@ sim.onChange(() => {
   if (tc && state.tableData) {
     const inputIds = tc.inputLabels.map(lbl => sim.resolveLabel(lbl))
     const outputIds = tc.outputLabels.map(lbl => sim.resolveLabel(lbl))
-    const inputs = getInputCombination(sim.signals, inputIds)
+    const inputs = getInputCombination(sim.signals, inputIds, sim.buttons)
     const outputs = getOutputValues(sim.signals, outputIds)
     state.tableData.update(inputs, outputs)
     state._revision++
@@ -270,7 +270,7 @@ function syncFromHash() {
 
         requestAnimationFrame(() => {
           if (p.simulation) {
-            sim.init(p.simulation)
+            sim.init(JSON.parse(JSON.stringify(p.simulation)))
             const ttc = document.getElementById('truth-table-container')
             if (ttc && state.tableData) {
               state.tableData.render(ttc)
