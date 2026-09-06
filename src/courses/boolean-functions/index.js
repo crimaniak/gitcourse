@@ -209,7 +209,7 @@ export const BOOLEAN_COURSE = {
       id: 'connect-nodes',
       title: 'Connect Nodes',
       subtitle: 'Your first circuit',
-      description: 'On the scheme below you see a DC source (power supply) on the left and an LED on the right. Your task is to connect the DC output to the LED input. Click on a connector point (small circle) on the DC output, then click on the connector point on the LED input — a wire will appear.',
+      description: 'On the scheme below you see a DC source (power supply) on the left and an LED on the right. Your task is to connect the DC output to the LED input. Press and hold on a connector point (small circle) on the DC output, drag the wire to a connector point on the LED input, and release the mouse button there — a wire will appear.',
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
