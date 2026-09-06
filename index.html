@@ -119,6 +119,7 @@
           <button class="primary" @click="checkSolution" :disabled="solutionChecked">
             {{ solutionChecked ? '✅ Solved!' : 'Check Solution' }}
           </button>
+          <button v-if="solutionChecked" class="secondary" @click="resetTask" style="margin-left:0.75rem;">Reset</button>
         </div>
 
         <!-- Result display -->

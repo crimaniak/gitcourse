@@ -72,6 +72,14 @@ export function completePage(courseId, pageId) {
   })
 }
 
+export function uncompletePage(courseId, pageId) {
+  update(d => {
+    if (d.progress[courseId]) {
+      d.progress[courseId].completedPages = (d.progress[courseId].completedPages || []).filter(p => p !== pageId)
+    }
+  })
+}
+
 export function setCurrentPage(courseId, pageId) {
   update(d => {
     if (!d.progress[courseId]) {

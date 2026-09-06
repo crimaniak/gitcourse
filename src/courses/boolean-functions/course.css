@@ -113,7 +113,7 @@
 .truth-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.95rem;
+  font-size: 0.76rem;
   min-width: 280px;
   border: 1px solid var(--tt-border);
 }
@@ -121,7 +121,7 @@
 .truth-table th {
   background: var(--tt-header-bg);
   color: var(--tt-header-text);
-  padding: 0.6rem 0.8rem;
+  padding: 0.48rem 0.64rem;
   text-align: center;
   font-weight: 600;
   border: 1px solid var(--tt-border);
@@ -132,7 +132,7 @@
 }
 
 .truth-table td {
-  padding: 0.5rem 0.8rem;
+  padding: 0.4rem 0.64rem;
   text-align: center;
   border: 1px solid var(--tt-border);
 }

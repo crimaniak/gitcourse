@@ -16,6 +16,7 @@ import {
   setCourseParam,
   setCurrentPage,
   completePage,
+  uncompletePage,
   exportData as exportStorage,
   importData as importStorage,
   resetProgress,
@@ -155,6 +156,31 @@ export const state = reactive({
       this.resultMessage = '❌ ' + translator.translateObject(result.hint || 'Try again.')
       this.solutionChecked = false
     }
+  },
+
+  resetTask() {
+    if (!this.solutionChecked) return
+    const page = this.page
+    if (!page) return
+    uncompletePage(this.courseId, this.pageId)
+    this.solutionChecked = false
+    this.isCorrect = false
+    this.resultMessage = ''
+    this.tableData = page.tableConfig
+      ? new TruthTable(page.tableConfig.inputLabels, page.tableConfig.outputLabels, page.tableConfig.expected, page.tableConfig)
+      : null
+    this._revision++
+
+    requestAnimationFrame(() => {
+      if (page.simulation) {
+        sim.init(JSON.parse(JSON.stringify(page.simulation)))
+        const ttc = document.getElementById('truth-table-container')
+        if (ttc && this.tableData) {
+          this.tableData.render(ttc)
+          translator.translateNode(ttc)
+        }
+      }
+    })
   },
 
   saveName() {
