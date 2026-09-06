@@ -903,15 +903,14 @@ export const BOOLEAN_COURSE = {
       id: 'build-summator',
       title: 'Build a Summator',
       subtitle: 'Full adder',
-      description: 'A summator (full adder) adds two bits A and B together with a carry-in C. The SUM output equals XOR(A,B,C); the CARRY output is 1 when at least two of the three inputs are 1. Build it with two XOR gates, two AND gates and one OR gate. Complete the truth table.',
+      description: 'A summator (full adder) adds two bits A and B together with a carry-in C. Build it from two half-summators and one OR gate. The first half-summator adds A and B, producing a partial sum and a carry; the second one adds that partial sum to C and produces SUM. The final CARRY output is the OR of the two carries. Complete the truth table.',
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: true,
         canAdd: true, canRemove: true, canMove: true,
         canRewire: true, canEdit: false,
         toolbox: [
-          { type: 'XOR', maxCount: 2 },
-          { type: 'AND', maxCount: 2 },
+          { type: 'HalfAdder', maxCount: 2 },
           { type: 'OR', maxCount: 1 },
         ],
         devices: [
@@ -933,7 +932,7 @@ export const BOOLEAN_COURSE = {
         expected: [[0, 0], [1, 0], [1, 0], [0, 1], [1, 0], [0, 1], [0, 1], [1, 1]], showReference: true,
       },
       checkSolution(signals, buttons, tableData, resolve) {
-        return checkTruthTable(tableData, 'SUM must be 1 when an odd number of the three inputs is 1 (XOR). CARRY must be 1 when at least two of the three inputs are 1.', 'Fill all rows.')
+        return checkTruthTable(tableData, 'The circuit should be two half-summators joined by an OR gate: the first half-summator adds A and B, the second adds that sum to C. CARRY is the OR of the two half-summator carries.', 'Fill all rows.')
         return { correct: true }
       },
     },
@@ -1067,7 +1066,7 @@ export const BOOLEAN_COURSE = {
       id: 'jk-trigger',
       title: 'Build JK Trigger',
       subtitle: 'Using RS-FF',
-      description: 'A JK trigger builds on the RS-FF by adding clocked inputs. It uses an RS-FF plus additional NAND gates and a NOT gate. The J and K inputs are sampled on the clock edge. Complete the state table.',
+      description: 'A JK trigger builds on the RS-FF by adding clocked inputs. It uses an RS-FF plus two NAND gates. The J and K inputs are sampled on the clock edge. Complete the state table.',
       simulation: {
         width: 700, height: 300,
         showToolbox: true,
@@ -1075,16 +1074,15 @@ export const BOOLEAN_COURSE = {
         canRewire: true, canEdit: false,
         toolbox: [
           { type: 'RS-FF', maxCount: 1 },
-          { type: 'NAND', maxCount: 3 },
-          { type: 'NOT', maxCount: 1 },
+          { type: 'NAND', maxCount: 2 },
+          { type: 'LED', maxCount: 1, labelMask: 'Q' },
+          { type: 'LED', maxCount: 1, labelMask: '~Q' },
         ],
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: 130, label: 'DC' },
           { type: 'Toggle', id: 'togJ', x: 96, y: 48, label: 'J' },
           { type: 'PushOn', id: 'pbClk', x: 96, y: 120, label: 'CLK' },
           { type: 'Toggle', id: 'togK', x: 96, y: 192, label: 'K' },
-          { type: 'LED', id: 'ledQ', x: 620, y: 60, label: 'Q' },
-          { type: 'LED', id: 'ledNQ', x: 620, y: 180, label: '~Q' },
         ],
         connectors: [
           { from: 'togJ.in0', to: 'dc.out0' },
@@ -1101,7 +1099,7 @@ export const BOOLEAN_COURSE = {
           const hasNQ = nqSig && nqSig.value != null
           if (hasQ && hasNQ) return { correct: true }
           if (hasQ) return { correct: false, hint: 'Q works, but ~Q LED is not lit. Make sure both outputs are connected.' }
-          return { correct: false, hint: 'Build the JK trigger: RS-FF + 3 NANDs + NOT. Connect J, CLK, K inputs, and wire Q and ~Q outputs.' }
+          return { correct: false, hint: 'Build the JK trigger: RS-FF + 2 NANDs. Connect J, CLK, K inputs, and wire Q and ~Q outputs.' }
         }
         if (!schema) return legacyCheck()
         const schemaResult = checkSchemaAgainstReferences(schema, REF_JK_TRIGGER)

@@ -109,6 +109,16 @@ export const state = reactive({
     return p && (p.completedPages || []).includes(pageId)
   },
 
+  pageUnlocked(pageId) {
+    void this._revision
+    const p = getCourseProgress(this.courseId)
+    const completed = p.completedPages || []
+    if (completed.includes(pageId)) return true
+    const pages = this.course.pages
+    const firstUncompleted = pages.find(pg => !completed.includes(pg.id))
+    return !firstUncompleted || firstUncompleted.id === pageId
+  },
+
   goHome() { window.location.hash = '#/' },
   goToCourse(id) { window.location.hash = '#/course/' + id },
   goToSettings() { window.location.hash = '#/settings' },

@@ -69,10 +69,10 @@
 
       <h3>Lessons</h3>
 
-      <div v-for="(page, i) in course.pages" class="course-card" style="cursor:pointer;" @click="goToPage(course.id, page.id)">
+      <div v-for="(page, i) in course.pages" class="course-card" :class="{ locked: !pageUnlocked(page.id) }" @click="pageUnlocked(page.id) && goToPage(course.id, page.id)">
         <div style="display:flex; align-items:center; gap:1rem;">
           <span style="font-size:1.5rem; width:2rem; text-align:center;">
-            {{ pageDone(page.id) ? '✅' : (currentPageId === page.id ? '📍' : '🔲') }}
+            {{ pageDone(page.id) ? '✅' : (pageUnlocked(page.id) ? (currentPageId === page.id ? '📍' : '🔲') : '🔒') }}
           </span>
           <div>
             <h4 style="margin:0;">
