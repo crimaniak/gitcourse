@@ -262,7 +262,7 @@ function syncFromHash() {
         state.tableData = null
 
         if (p.tableConfig) {
-          state.tableData = new TruthTable(p.tableConfig.inputLabels, p.tableConfig.outputLabels, p.tableConfig.expected)
+          state.tableData = new TruthTable(p.tableConfig.inputLabels, p.tableConfig.outputLabels, p.tableConfig.expected, p.tableConfig)
         }
 
         setCurrentPage(state.courseId, state.pageId)

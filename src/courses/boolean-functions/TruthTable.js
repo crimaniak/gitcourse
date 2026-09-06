@@ -1,5 +1,5 @@
 export class TruthTable {
-  constructor(inputLabels, outputLabels, expected) {
+  constructor(inputLabels, outputLabels, expected, options = {}) {
     this.inputLabels = inputLabels
     this.outputLabels = outputLabels
     this.numInputs = inputLabels.length
@@ -15,6 +15,7 @@ export class TruthTable {
     }
 
     this.expected = this._normalizeExpected(expected, outputLabels.length)
+    this.showReference = !!options.showReference
     this._container = null
     this._lastUpdatedRow = -1
   }
@@ -62,18 +63,9 @@ export class TruthTable {
     return this.rows
   }
 
-  render(container) {
-    this._container = container
-    container.innerHTML = ''
-
-    const wrap = document.createElement('div')
-
-    const heading = document.createElement('h3')
-    heading.textContent = 'Truth Table'
-    wrap.appendChild(heading)
-
+  _makeTable(className, rows) {
     const table = document.createElement('table')
-    table.className = 'truth-table'
+    table.className = className
 
     const thead = document.createElement('thead')
     const headerRow = document.createElement('tr')
@@ -91,7 +83,7 @@ export class TruthTable {
     table.appendChild(thead)
 
     const tbody = document.createElement('tbody')
-    for (const row of this.rows) {
+    for (const row of rows) {
       const tr = document.createElement('tr')
       for (const val of row.inputs) {
         const td = document.createElement('td')
@@ -107,14 +99,39 @@ export class TruthTable {
       tbody.appendChild(tr)
     }
     table.appendChild(tbody)
+    return table
+  }
 
-    wrap.appendChild(table)
+  render(container) {
+    this._container = container
+    container.innerHTML = ''
+
+    const wrap = document.createElement('div')
+
+    if (this.showReference) {
+      const hasExpected = this.expected && this.expected.length === this.rows.length
+      const refRows = this.rows.map((row, i) => ({
+        inputs: row.inputs,
+        outputs: hasExpected ? this.expected[i].slice() : row.outputs.slice(),
+      }))
+      const refHeading = document.createElement('h3')
+      refHeading.textContent = 'Reference Truth Table'
+      wrap.appendChild(refHeading)
+      wrap.appendChild(this._makeTable('truth-table truth-table-reference', refRows))
+    }
+
+    const heading = document.createElement('h3')
+    heading.textContent = 'Truth Table'
+    wrap.appendChild(heading)
+
+    wrap.appendChild(this._makeTable('truth-table truth-table-live', this.rows))
+
     container.appendChild(wrap)
   }
 
   updateDOM() {
     if (!this._container) return
-    const tbody = this._container.querySelector('.truth-table tbody')
+    const tbody = this._container.querySelector('.truth-table-live tbody')
     if (!tbody) return
 
     const trs = tbody.querySelectorAll('tr')

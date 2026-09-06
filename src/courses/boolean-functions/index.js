@@ -213,7 +213,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: true, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -274,7 +274,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: true, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -331,7 +331,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: true, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -359,7 +359,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: true, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -387,7 +387,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: true, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -417,7 +417,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -477,7 +477,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -510,7 +510,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -543,7 +543,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -576,7 +576,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -609,7 +609,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -642,7 +642,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: SIM_W, height: SIM_H,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -666,6 +666,278 @@ export const BOOLEAN_COURSE = {
       },
     },
 
+    // ─── Task 12a: Make a NOT Gate from a NAND Gate ───
+    {
+      id: 'build-not-from-nand',
+      title: 'Make NOT Gate from NAND',
+      subtitle: 'NAND as inverter',
+      description: 'A NAND gate becomes an inverter when both of its inputs are tied together. Add one NAND gate from the toolbox, connect both of its inputs to the A toggle, and feed its output to the OUT LED. Then toggle A and complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'NAND', maxCount: 1 },
+        ],
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'Toggle', id: 'ta', x: 96, y: 40, label: 'A' },
+          { type: 'LED', id: 'led', x: 320, y: 60, label: 'OUT' },
+        ],
+        connectors: [
+          { from: 'ta.in0', to: 'dc.out0' },
+        ],
+      },
+      tableConfig: { inputLabels: ['A'], outputLabels: ['OUT'], numInputs: 1, expected: [1, 0], showReference: true },
+      checkSolution(signals, buttons, tableData, resolve) {
+        return checkTruthTable(tableData, 'The circuit is not a NOT gate. Tie both NAND inputs to the A toggle so the NAND acts as an inverter.', 'Fill all rows.')
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 12b: Make a NAND Gate from AND and NOT Gates ───
+    {
+      id: 'build-nand-from-and-not',
+      title: 'Make NAND from AND and NOT',
+      subtitle: 'Invert an AND',
+      description: 'Combine an AND gate with a NOT gate to build a NAND gate: the NOT gate inverts the AND output. Wire A and B into the AND, then run the AND output through the NOT into OUT. Complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'AND', maxCount: 1 },
+          { type: 'NOT', maxCount: 1 },
+        ],
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'Toggle', id: 'ta', x: 96, y: 40, label: 'A' },
+          { type: 'Toggle', id: 'tb', x: 96, y: 96, label: 'B' },
+          { type: 'LED', id: 'led', x: 320, y: 60, label: 'OUT' },
+        ],
+        connectors: [
+          { from: 'ta.in0', to: 'dc.out0' },
+          { from: 'tb.in0', to: 'dc.out0' },
+        ],
+      },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [1, 1, 1, 0], showReference: true },
+      checkSolution(signals, buttons, tableData, resolve) {
+        return checkTruthTable(tableData, 'The circuit is not a NAND. Send A and B into an AND gate, then invert its output with a NOT gate.', 'Fill all rows.')
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 12c: Make an AND Gate for Three Inputs ───
+    {
+      id: 'build-and3',
+      title: 'Make AND Gate for Three Inputs',
+      subtitle: 'Only 2-input AND gates',
+      description: 'Build an AND gate with three inputs A, B and C using only 2-input AND gates. AND A and B together, then AND that result with C. Complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'AND', maxCount: 2 },
+        ],
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'Toggle', id: 'ta', x: 96, y: 40, label: 'A' },
+          { type: 'Toggle', id: 'tb', x: 96, y: 96, label: 'B' },
+          { type: 'Toggle', id: 'tc', x: 96, y: 152, label: 'C' },
+          { type: 'LED', id: 'led', x: 320, y: 96, label: 'OUT' },
+        ],
+        connectors: [
+          { from: 'ta.in0', to: 'dc.out0' },
+          { from: 'tb.in0', to: 'dc.out0' },
+          { from: 'tc.in0', to: 'dc.out0' },
+        ],
+      },
+      tableConfig: { inputLabels: ['A', 'B', 'C'], outputLabels: ['OUT'], numInputs: 3, expected: [0, 0, 0, 0, 0, 0, 0, 1], showReference: true },
+      checkSolution(signals, buttons, tableData, resolve) {
+        return checkTruthTable(tableData, 'The output should be 1 only when A, B and C are all ON. Chain two AND gates: (A·B)·C.', 'Fill all rows.')
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 12d: Make an OR Gate for Three Inputs ───
+    {
+      id: 'build-or3',
+      title: 'Make OR Gate for Three Inputs',
+      subtitle: 'Only 2-input OR gates',
+      description: 'Build an OR gate with three inputs A, B and C using only 2-input OR gates. OR A and B together, then OR that result with C. Complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'OR', maxCount: 2 },
+        ],
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'Toggle', id: 'ta', x: 96, y: 40, label: 'A' },
+          { type: 'Toggle', id: 'tb', x: 96, y: 96, label: 'B' },
+          { type: 'Toggle', id: 'tc', x: 96, y: 152, label: 'C' },
+          { type: 'LED', id: 'led', x: 320, y: 96, label: 'OUT' },
+        ],
+        connectors: [
+          { from: 'ta.in0', to: 'dc.out0' },
+          { from: 'tb.in0', to: 'dc.out0' },
+          { from: 'tc.in0', to: 'dc.out0' },
+        ],
+      },
+      tableConfig: { inputLabels: ['A', 'B', 'C'], outputLabels: ['OUT'], numInputs: 3, expected: [0, 1, 1, 1, 1, 1, 1, 1], showReference: true },
+      checkSolution(signals, buttons, tableData, resolve) {
+        return checkTruthTable(tableData, 'The output should be 1 when at least one of A, B or C is ON. Chain two OR gates: (A+B)+C.', 'Fill all rows.')
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 12e: Make an AND Gate from only NAND Gates ───
+    {
+      id: 'build-and-from-nand',
+      title: 'Make AND Gate from NAND',
+      subtitle: 'Only NAND gates',
+      description: 'A NAND output flipped by a second NAND becomes AND. Use one NAND for the logic and a second NAND as an inverter (tie both of its inputs to the first NAND output). Complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'NAND', maxCount: 2 },
+        ],
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'Toggle', id: 'ta', x: 96, y: 40, label: 'A' },
+          { type: 'Toggle', id: 'tb', x: 96, y: 96, label: 'B' },
+          { type: 'LED', id: 'led', x: 320, y: 60, label: 'OUT' },
+        ],
+        connectors: [
+          { from: 'ta.in0', to: 'dc.out0' },
+          { from: 'tb.in0', to: 'dc.out0' },
+        ],
+      },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [0, 0, 0, 1], showReference: true },
+      checkSolution(signals, buttons, tableData, resolve) {
+        return checkTruthTable(tableData, 'NAND plus an inverter restores AND. Invert the NAND output with a second NAND (inputs tied together).', 'Fill all rows.')
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 12f: Make an OR Gate from only NAND Gates ───
+    {
+      id: 'build-or-from-nand',
+      title: 'Make OR Gate from NAND',
+      subtitle: 'Only NAND gates',
+      description: 'By the De Morgan rule, NOT(NOT A · NOT B) = A + B. Use a NAND with tied inputs as an inverter for each input, then feed both inverted signals into a third NAND. Complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'NAND', maxCount: 3 },
+        ],
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'Toggle', id: 'ta', x: 96, y: 40, label: 'A' },
+          { type: 'Toggle', id: 'tb', x: 96, y: 96, label: 'B' },
+          { type: 'LED', id: 'led', x: 320, y: 60, label: 'OUT' },
+        ],
+        connectors: [
+          { from: 'ta.in0', to: 'dc.out0' },
+          { from: 'tb.in0', to: 'dc.out0' },
+        ],
+      },
+      tableConfig: { inputLabels: ['A', 'B'], outputLabels: ['OUT'], numInputs: 2, expected: [0, 1, 1, 1], showReference: true },
+      checkSolution(signals, buttons, tableData, resolve) {
+        return checkTruthTable(tableData, 'For OR, invert each input first with a NAND (inputs tied), then combine the two inverted signals in a third NAND.', 'Fill all rows.')
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 12g: Build a Half-Summator ───
+    {
+      id: 'build-half-adder',
+      title: 'Build a Half-Summator',
+      subtitle: 'Sum and carry',
+      description: 'A half-summator (half adder) adds two bits A and B. The SUM output equals XOR(A,B); the CARRY output equals AND(A,B). Build it with one XOR gate and one AND gate. Complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'XOR', maxCount: 1 },
+          { type: 'AND', maxCount: 1 },
+        ],
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'Toggle', id: 'ta', x: 96, y: 40, label: 'A' },
+          { type: 'Toggle', id: 'tb', x: 96, y: 96, label: 'B' },
+          { type: 'LED', id: 'ledSum', x: 320, y: 30, label: 'SUM' },
+          { type: 'LED', id: 'ledCarry', x: 320, y: 110, label: 'CARRY' },
+        ],
+        connectors: [
+          { from: 'ta.in0', to: 'dc.out0' },
+          { from: 'tb.in0', to: 'dc.out0' },
+        ],
+      },
+      tableConfig: {
+        inputLabels: ['A', 'B'], outputLabels: ['SUM', 'CARRY'], numInputs: 2,
+        expected: [[0, 0], [1, 0], [1, 0], [0, 1]], showReference: true,
+      },
+      checkSolution(signals, buttons, tableData, resolve) {
+        return checkTruthTable(tableData, 'SUM must be 1 when the inputs differ (XOR); CARRY must be 1 only when both inputs are 1 (AND).', 'Fill all rows.')
+        return { correct: true }
+      },
+    },
+
+    // ─── Task 12h: Build a Summator ───
+    {
+      id: 'build-summator',
+      title: 'Build a Summator',
+      subtitle: 'Full adder',
+      description: 'A summator (full adder) adds two bits A and B together with a carry-in C. The SUM output equals XOR(A,B,C); the CARRY output is 1 when at least two of the three inputs are 1. Build it with two XOR gates, two AND gates and one OR gate. Complete the truth table.',
+      simulation: {
+        width: SIM_W, height: SIM_H,
+        showToolbox: true,
+        canAdd: true, canRemove: true, canMove: true,
+        canRewire: true, canEdit: false,
+        toolbox: [
+          { type: 'XOR', maxCount: 2 },
+          { type: 'AND', maxCount: 2 },
+          { type: 'OR', maxCount: 1 },
+        ],
+        devices: [
+          { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
+          { type: 'Toggle', id: 'ta', x: 96, y: 40, label: 'A' },
+          { type: 'Toggle', id: 'tb', x: 96, y: 96, label: 'B' },
+          { type: 'Toggle', id: 'tc', x: 96, y: 152, label: 'C' },
+          { type: 'LED', id: 'ledSum', x: 320, y: 30, label: 'SUM' },
+          { type: 'LED', id: 'ledCarry', x: 320, y: 110, label: 'CARRY' },
+        ],
+        connectors: [
+          { from: 'ta.in0', to: 'dc.out0' },
+          { from: 'tb.in0', to: 'dc.out0' },
+          { from: 'tc.in0', to: 'dc.out0' },
+        ],
+      },
+      tableConfig: {
+        inputLabels: ['A', 'B', 'C'], outputLabels: ['SUM', 'CARRY'], numInputs: 3,
+        expected: [[0, 0], [1, 0], [1, 0], [0, 1], [1, 0], [0, 1], [0, 1], [1, 1]], showReference: true,
+      },
+      checkSolution(signals, buttons, tableData, resolve) {
+        return checkTruthTable(tableData, 'SUM must be 1 when an odd number of the three inputs is 1 (XOR). CARRY must be 1 when at least two of the three inputs are 1.', 'Fill all rows.')
+        return { correct: true }
+      },
+    },
+
     // ─── Task 13: Investigate RS Trigger ───
     {
       id: 'investigate-rs-trigger',
@@ -675,7 +947,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: 700, height: 280,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: SIM_H / 2 - 16, label: 'DC' },
@@ -756,7 +1028,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: 700, height: 300,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: 130, label: 'DC' },
@@ -846,7 +1118,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: 700, height: 260,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: 110, label: 'DC' },
@@ -934,7 +1206,7 @@ export const BOOLEAN_COURSE = {
       simulation: {
         width: 700, height: 260,
         showToolbox: false,
-        canAdd: false, canRemove: false, canMove: false,
+        canAdd: false, canRemove: false, canMove: true,
         canRewire: false, canEdit: false,
         devices: [
           { type: 'DC', id: 'dc', x: 32, y: 120, label: 'DC' },

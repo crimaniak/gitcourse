@@ -11,7 +11,7 @@ export class SimulationManager {
     this.dispose()
     const container = document.getElementById('simcir-container')
     if (!container) return
-    this.workspace = simcir.createWorkspace(simulation)
+    this.workspace = simcir.createWorkspace({ portRadius: 6, ...simulation })
     container.appendChild(this.workspace[0])
     this._rebuildLabelMap()
     this._attachEvents()

@@ -95,6 +95,21 @@
   margin: 1.5rem 0;
 }
 
+.truth-table-wrap h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0.4rem 0;
+  opacity: 0.85;
+}
+
+.truth-table-wrap h3:first-child {
+  margin-top: 0;
+}
+
+.truth-table + .truth-table {
+  margin-top: 0.75rem;
+}
+
 .truth-table {
   width: 100%;
   border-collapse: collapse;
@@ -110,6 +125,10 @@
   text-align: center;
   font-weight: 600;
   border: 1px solid var(--tt-border);
+}
+
+.truth-table-reference thead th {
+  color: var(--pico-primary);
 }
 
 .truth-table td {
